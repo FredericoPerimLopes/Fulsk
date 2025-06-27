@@ -1,3 +1,5 @@
+import { UserRole as PrismaUserRole } from '@prisma/client';
+
 export interface User {
   id: string;
   email: string;
@@ -11,11 +13,9 @@ export interface User {
   updatedAt: Date;
 }
 
-export enum UserRole {
-  ADMIN = 'admin',
-  INSTALLER = 'installer',
-  VIEWER = 'viewer'
-}
+// Use Prisma's generated enum
+export type UserRole = PrismaUserRole;
+export const UserRole = PrismaUserRole;
 
 export interface CreateUserDto {
   email: string;

@@ -2,7 +2,8 @@ import { Server } from 'socket.io';
 import mqtt from 'mqtt';
 import cron from 'node-cron';
 import { DeviceData, DeviceStatus } from '@models/Device';
-import { DeviceService } from '@services/DeviceService';
+import { DatabaseDeviceService as DeviceService } from '@services/DatabaseDeviceService';
+import { CommunicationProtocol } from '@prisma/client';
 
 export class DataCollectionService {
   private ioServer: Server;
@@ -242,7 +243,7 @@ export class DataCollectionService {
       }
 
       // Start new data collection
-      if (device.configuration.communicationProtocol === 'mqtt' && this.mqttClient) {
+      if (device.configuration.communicationProtocol === CommunicationProtocol.MQTT && this.mqttClient) {
         // For MQTT devices, just ensure we're subscribed
         this.mqttClient.subscribe(`fulsk/devices/${deviceId}/data`);
         console.log(`📡 Started MQTT data collection for device ${deviceId}`);

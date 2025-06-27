@@ -1,0 +1,177 @@
+// Fulsk Solar Panel Monitoring - Database Schema
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  firstName String
+  lastName  String
+  role      UserRole @default(VIEWER)
+  isActive  Boolean  @default(true)
+  lastLogin DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  ownedDevices     Device[] @relation("DeviceOwner")
+  installedDevices Device[] @relation("DeviceInstaller")
+  refreshTokens    RefreshToken[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  // Relationships
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+model Device {
+  id                    String       @id @default(cuid())
+  name                  String
+  type                  DeviceType
+  manufacturer          String
+  model                 String
+  serialNumber          String       @unique
+  firmwareVersion       String?
+  status                DeviceStatus @default(OFFLINE)
+  isActive              Boolean      @default(true)
+  lastSeen              DateTime?
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
+
+  // Location
+  address               String
+  city                  String
+  state                 String
+  country               String
+  zipCode               String
+  latitude              Float
+  longitude             Float
+  timezone              String
+
+  // Configuration
+  communicationProtocol CommunicationProtocol
+  dataCollectionInterval Int // seconds
+  minPowerThreshold     Float
+  maxTemperatureThreshold Float
+  minVoltageThreshold   Float
+  maxVoltageThreshold   Float
+  emailNotifications    Boolean @default(true)
+  smsNotifications      Boolean @default(false)
+  pushNotifications     Boolean @default(true)
+
+  // Relationships
+  ownerId      String
+  owner        User @relation("DeviceOwner", fields: [ownerId], references: [id])
+  installerId  String?
+  installer    User? @relation("DeviceInstaller", fields: [installerId], references: [id])
+  
+  deviceData   DeviceData[]
+  alerts       Alert[]
+
+  @@map("devices")
+}
+
+model DeviceData {
+  deviceId     String
+  timestamp    DateTime     @default(now()) @db.Timestamptz
+  power        Float        // Watts
+  voltage      Float        // Volts
+  current      Float        // Amperes
+  temperature  Float        // Celsius
+  irradiance   Float?       // W/m²
+  efficiency   Float?       // Percentage
+  energyToday  Float        // kWh
+  energyTotal  Float        // kWh
+  status       DeviceStatus
+
+  // Relationships
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  // Composite primary key for TimescaleDB compatibility
+  @@id([deviceId, timestamp])
+  @@index([timestamp])
+  @@map("device_data")
+}
+
+model Alert {
+  id           String      @id @default(cuid())
+  deviceId     String
+  type         AlertType
+  severity     AlertSeverity
+  message      String
+  value        Float?      // The value that triggered the alert
+  threshold    Float?      // The threshold that was exceeded
+  acknowledged Boolean     @default(false)
+  acknowledgedAt DateTime?
+  acknowledgedBy String?
+  createdAt    DateTime    @default(now())
+  resolvedAt   DateTime?
+
+  // Relationships
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@index([deviceId, createdAt])
+  @@index([severity, acknowledged])
+  @@map("alerts")
+}
+
+// Enums
+enum UserRole {
+  ADMIN
+  INSTALLER
+  VIEWER
+}
+
+enum DeviceType {
+  INVERTER
+  PANEL
+  BATTERY
+  METER
+  SENSOR
+}
+
+enum DeviceStatus {
+  ONLINE
+  OFFLINE
+  ERROR
+  MAINTENANCE
+}
+
+enum CommunicationProtocol {
+  MQTT
+  HTTP
+  MODBUS
+}
+
+enum AlertType {
+  LOW_POWER
+  HIGH_TEMPERATURE
+  VOLTAGE_OUT_OF_RANGE
+  DEVICE_OFFLINE
+  DEVICE_ERROR
+  MAINTENANCE_DUE
+  COMMUNICATION_FAILURE
+}
+
+enum AlertSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}

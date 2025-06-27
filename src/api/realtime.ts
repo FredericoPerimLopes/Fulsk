@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { authenticate } from '@middleware/auth';
-import { DeviceService } from '@services/DeviceService';
+import { DatabaseDeviceService as DeviceService } from '@services/DatabaseDeviceService';
+import { DeviceStatus } from '@models/Device';
 
 const router = Router();
 
@@ -26,9 +27,9 @@ router.get('/metrics', authenticate, async (req: Request, res: Response) => {
         totalPower += data.power;
         totalEnergyToday += data.energyToday;
         
-        if (data.status === 'online') {
+        if (data.status === DeviceStatus.ONLINE) {
           onlineDevices++;
-        } else if (data.status === 'error') {
+        } else if (data.status === DeviceStatus.ERROR) {
           errorDevices++;
         }
       }
@@ -135,7 +136,7 @@ router.get('/alerts', authenticate, async (req: Request, res: Response) => {
       if (recentData.length > 0) {
         const data = recentData[0];
         
-        if (data.status === 'error') {
+        if (data.status === DeviceStatus.ERROR) {
           alerts.push({
             id: `alert-${device.id}-${Date.now()}`,
             deviceId: device.id,

@@ -8,6 +8,7 @@ import authRoutes from '@api/auth';
 import deviceRoutes from '@api/devices';
 import realtimeRoutes from '@api/realtime';
 import { DataCollectionService } from '@services/DataCollectionService';
+import { connectDatabase, checkDatabaseHealth } from '@utils/database';
 
 // Load environment variables
 dotenv.config();
@@ -36,12 +37,15 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // Health check endpoint
-app.get('/health', (req, res) => {
+app.get('/health', async (req, res) => {
+  const dbHealth = await checkDatabaseHealth();
+  
   res.status(200).json({
     status: 'OK',
     timestamp: new Date().toISOString(),
     service: 'Fulsk Solar Monitoring API',
-    version: '1.0.0'
+    version: '1.0.0',
+    database: dbHealth ? 'connected' : 'disconnected'
   });
 });
 
@@ -100,25 +104,49 @@ app.use('*', (req, res) => {
   });
 });
 
-// Initialize data collection service
-const dataCollectionService = new DataCollectionService(io);
+// Initialize database and services
+async function startServer() {
+  try {
+    // Connect to database first
+    await connectDatabase();
+    
+    // Initialize data collection service
+    const dataCollectionService = new DataCollectionService(io);
 
-// Start server
-server.listen(PORT, HOST, () => {
-  console.log(`🚀 Fulsk API server running on http://${HOST}:${PORT}`);
-  console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🔌 WebSocket server ready for real-time connections`);
-  console.log(`📡 Data collection service initialized`);
-});
+    // Start server
+    server.listen(PORT, HOST, () => {
+      console.log(`🚀 Fulsk API server running on http://${HOST}:${PORT}`);
+      console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`🗄️ Database: Connected and ready`);
+      console.log(`🔌 WebSocket server ready for real-time connections`);
+      console.log(`📡 Data collection service initialized`);
+    });
+    
+    return dataCollectionService;
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
+  }
+}
+
+// Global reference for cleanup
+let dataCollectionService: any = null;
+
+// Start the server
+startServer().then((service) => {
+  dataCollectionService = service;
+}).catch(console.error);
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
   console.log('🛑 SIGTERM received, shutting down gracefully');
-  dataCollectionService.cleanup();
+  if (dataCollectionService) {
+    dataCollectionService.cleanup();
+  }
   server.close(() => {
     console.log('👋 Server closed');
     process.exit(0);
   });
 });
 
-export { app, io, dataCollectionService };
+export { app, io };

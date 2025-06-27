@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import Joi from 'joi';
-import { AuthService } from '@services/AuthService';
+import { DatabaseAuthService as AuthService } from '@services/DatabaseAuthService';
 import { CreateUserDto, LoginDto, UserRole } from '@models/User';
 import { authenticate, authorize } from '@middleware/auth';
 

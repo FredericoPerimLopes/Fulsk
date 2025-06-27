@@ -109,3 +109,4 @@ memory/archive/
 .tern-port
 
 node_modules/
+/src/generated/prisma

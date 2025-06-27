@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import Joi from 'joi';
-import { DeviceService } from '@services/DeviceService';
+import { DatabaseDeviceService as DeviceService } from '@services/DatabaseDeviceService';
 import { CreateDeviceDto, UpdateDeviceDto, DeviceType, DeviceStatus } from '@models/Device';
 import { authenticate, authorize } from '@middleware/auth';
 import { UserRole } from '@models/User';

@@ -17,20 +17,16 @@ export interface Device {
   updatedAt: Date;
 }
 
-export enum DeviceType {
-  INVERTER = 'inverter',
-  PANEL = 'panel',
-  BATTERY = 'battery',
-  METER = 'meter',
-  SENSOR = 'sensor'
-}
+import { DeviceType as PrismaDeviceType, DeviceStatus as PrismaDeviceStatus, CommunicationProtocol as PrismaCommunicationProtocol } from '@prisma/client';
 
-export enum DeviceStatus {
-  ONLINE = 'online',
-  OFFLINE = 'offline',
-  ERROR = 'error',
-  MAINTENANCE = 'maintenance'
-}
+// Use Prisma's generated enums
+export type DeviceType = PrismaDeviceType;
+export const DeviceType = PrismaDeviceType;
+
+export type DeviceStatus = PrismaDeviceStatus;
+export const DeviceStatus = PrismaDeviceStatus;
+
+export type CommunicationProtocol = PrismaCommunicationProtocol;
 
 export interface DeviceLocation {
   address: string;
@@ -46,7 +42,7 @@ export interface DeviceLocation {
 }
 
 export interface DeviceConfiguration {
-  communicationProtocol: 'mqtt' | 'http' | 'modbus';
+  communicationProtocol: CommunicationProtocol;
   dataCollectionInterval: number; // seconds
   alertThresholds: {
     minPower: number;
