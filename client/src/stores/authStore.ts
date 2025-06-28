@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { User, LoginCredentials, RegisterData } from '../types/api';
+import type { User, LoginCredentials, RegisterData } from '../types/api';
 import { apiService } from '../services/api';
 
 interface AuthState {
@@ -16,7 +16,7 @@ interface AuthState {
   clearError: () => void;
 }
 
-export const useAuthStore = create<AuthState>((set, get) => ({
+export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isAuthenticated: false,
   isLoading: false,

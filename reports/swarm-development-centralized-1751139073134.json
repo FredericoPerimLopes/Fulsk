@@ -1,0 +1,13 @@
+{
+  "objective": "Review the latest changes and check if the current state of the codebase is in a working condition",
+  "strategy": "development",
+  "mode": "centralized",
+  "maxAgents": 5,
+  "timeout": 60,
+  "parallel": false,
+  "monitor": false,
+  "output": "json",
+  "outputDir": "./reports",
+  "timestamp": "2025-06-28T19:31:13.134Z",
+  "id": "swarm-development-centralized-1751139073134"
+}

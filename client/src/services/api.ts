@@ -43,11 +43,11 @@ class ApiService {
           if (refreshToken) {
             try {
               const response = await this.refreshToken(refreshToken);
-              localStorage.setItem('auth_token', response.data.token);
-              localStorage.setItem('refresh_token', response.data.refreshToken);
+              localStorage.setItem('auth_token', response.data.data.token);
+              localStorage.setItem('refresh_token', response.data.data.refreshToken);
               
               // Retry original request
-              error.config.headers.Authorization = `Bearer ${response.data.token}`;
+              error.config.headers.Authorization = `Bearer ${response.data.data.token}`;
               return this.api.request(error.config);
             } catch (refreshError) {
               // Refresh failed, redirect to login

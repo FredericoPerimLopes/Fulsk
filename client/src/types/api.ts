@@ -12,11 +12,13 @@ export interface User {
   updatedAt: string;
 }
 
-export enum UserRole {
-  ADMIN = 'ADMIN',
-  INSTALLER = 'INSTALLER', 
-  VIEWER = 'VIEWER'
-}
+export const UserRole = {
+  ADMIN: 'ADMIN',
+  INSTALLER: 'INSTALLER', 
+  VIEWER: 'VIEWER'
+} as const;
+
+export type UserRole = typeof UserRole[keyof typeof UserRole];
 
 export interface AuthResponse {
   user: User;
@@ -57,20 +59,24 @@ export interface Device {
   installer?: string;
 }
 
-export enum DeviceType {
-  INVERTER = 'INVERTER',
-  PANEL = 'PANEL',
-  BATTERY = 'BATTERY',
-  METER = 'METER',
-  SENSOR = 'SENSOR'
-}
+export const DeviceType = {
+  INVERTER: 'INVERTER',
+  PANEL: 'PANEL',
+  BATTERY: 'BATTERY',
+  METER: 'METER',
+  SENSOR: 'SENSOR'
+} as const;
 
-export enum DeviceStatus {
-  ONLINE = 'ONLINE',
-  OFFLINE = 'OFFLINE', 
-  ERROR = 'ERROR',
-  MAINTENANCE = 'MAINTENANCE'
-}
+export type DeviceType = typeof DeviceType[keyof typeof DeviceType];
+
+export const DeviceStatus = {
+  ONLINE: 'ONLINE',
+  OFFLINE: 'OFFLINE', 
+  ERROR: 'ERROR',
+  MAINTENANCE: 'MAINTENANCE'
+} as const;
+
+export type DeviceStatus = typeof DeviceStatus[keyof typeof DeviceStatus];
 
 export interface DeviceLocation {
   address: string;
@@ -146,6 +152,7 @@ export interface Alert {
   message: string;
   timestamp: string;
   acknowledged: boolean;
+  read?: boolean;
 }
 
 export interface ApiResponse<T> {
