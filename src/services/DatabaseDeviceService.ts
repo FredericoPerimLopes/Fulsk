@@ -337,36 +337,56 @@ export class DatabaseDeviceService {
         break;
     }
 
-    // Use raw SQL for aggregation queries
-    const stats = await prisma.$queryRaw`
-      SELECT 
-        COUNT(*) as data_points,
-        AVG(power) as avg_power,
-        MAX(power) as max_power,
-        MIN(power) as min_power,
-        AVG(voltage) as avg_voltage,
-        AVG(current) as avg_current,
-        AVG(temperature) as avg_temperature,
-        AVG(efficiency) as avg_efficiency,
-        MAX(energy_today) as total_energy,
-        COUNT(CASE WHEN status = 'ONLINE' THEN 1 END) * 100.0 / COUNT(*) as uptime_percentage
-      FROM device_data 
-      WHERE device_id = ${deviceId} 
-        AND timestamp >= ${startDate}
-        AND timestamp <= ${now}
-    `;
-
-    const result = Array.isArray(stats) ? stats[0] : stats;
+    // Use Prisma aggregation instead of raw SQL to prevent injection
+    const stats = await prisma.deviceData.aggregate({
+      where: {
+        deviceId: deviceId,
+        timestamp: {
+          gte: startDate,
+          lte: now
+        }
+      },
+      _count: { deviceId: true },
+      _avg: {
+        power: true,
+        voltage: true,
+        current: true,
+        temperature: true,
+        efficiency: true
+      },
+      _max: {
+        power: true,
+        energyToday: true
+      },
+      _min: {
+        power: true
+      }
+    });
+    
+    // Get uptime percentage with a separate query
+    const onlineCount = await prisma.deviceData.count({
+      where: {
+        deviceId: deviceId,
+        timestamp: {
+          gte: startDate,
+          lte: now
+        },
+        status: 'ONLINE'
+      }
+    });
+    
+    const totalCount = stats._count.deviceId || 0;
+    const uptimePercentage = totalCount > 0 ? (onlineCount / totalCount) * 100 : 0;
 
     return {
       deviceId,
       period,
-      totalEnergy: Number(result?.total_energy || 0),
-      averagePower: Number(result?.avg_power || 0),
-      peakPower: Number(result?.max_power || 0),
-      efficiency: Number(result?.avg_efficiency || 0),
-      uptime: Number(result?.uptime_percentage || 0),
-      dataPoints: Number(result?.data_points || 0)
+      totalEnergy: Number(stats._max.energyToday || 0),
+      averagePower: Number(stats._avg.power || 0),
+      peakPower: Number(stats._max.power || 0),
+      efficiency: Number(stats._avg.efficiency || 0),
+      uptime: Number(uptimePercentage || 0),
+      dataPoints: Number(totalCount || 0)
     };
   }
 

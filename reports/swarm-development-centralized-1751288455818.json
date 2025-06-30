@@ -1,0 +1,13 @@
+{
+  "objective": "Make sure the frontend is working",
+  "strategy": "development",
+  "mode": "centralized",
+  "maxAgents": 5,
+  "timeout": 60,
+  "parallel": false,
+  "monitor": false,
+  "output": "json",
+  "outputDir": "./reports",
+  "timestamp": "2025-06-30T13:00:55.818Z",
+  "id": "swarm-development-centralized-1751288455818"
+}

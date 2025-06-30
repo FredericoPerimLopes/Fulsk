@@ -245,7 +245,7 @@ router.get('/:id/data', authenticate, async (req: Request, res: Response) => {
   try {
     const deviceId = req.params.id;
     const userId = req.user!.userId;
-    const limit = parseInt(req.query.limit as string) || 100;
+    const limit = Math.max(1, Math.min(parseInt(req.query.limit as string) || 100, 1000)); // Limit between 1-1000
 
     const data = await DeviceService.getDeviceData(deviceId, userId, limit);
 
@@ -272,12 +272,21 @@ router.get('/:id/stats', authenticate, async (req: Request, res: Response) => {
   try {
     const deviceId = req.params.id;
     const userId = req.user!.userId;
-    const period = (req.query.period as 'day' | 'week' | 'month' | 'year') || 'day';
+    const period = (req.query.period as string) || 'day';
 
+    // Validate period parameter
     if (!['day', 'week', 'month', 'year'].includes(period)) {
       return res.status(400).json({
         error: 'Invalid Period',
         message: 'Period must be one of: day, week, month, year'
+      });
+    }
+    
+    // Validate deviceId format (assuming UUIDs)
+    if (!deviceId || deviceId.length < 10) {
+      return res.status(400).json({
+        error: 'Invalid Device ID',
+        message: 'Device ID is required and must be valid'
       });
     }
 

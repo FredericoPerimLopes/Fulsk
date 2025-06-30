@@ -13,7 +13,12 @@ export class DataCollectionService {
   constructor(ioServer: Server) {
     this.ioServer = ioServer;
     this.initializeMQTT();
-    this.startDataSimulation();
+    
+    // Only start simulation in development mode
+    if (process.env.NODE_ENV === 'development') {
+      this.startDataSimulation();
+    }
+    
     this.scheduleDataCleanup();
   }
 
@@ -176,17 +181,15 @@ export class DataCollectionService {
   }
 
   /**
-   * Start data simulation for testing (remove in production)
+   * Start data simulation for development only
    */
   private startDataSimulation(): void {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🎭 Starting data simulation for development');
-      
-      // Simulate data for testing devices
-      setTimeout(() => {
-        this.simulateDeviceData();
-      }, 5000); // Start after 5 seconds
-    }
+    console.log('🎭 Starting data simulation for development');
+    
+    // Simulate data for testing devices
+    setTimeout(() => {
+      this.simulateDeviceData();
+    }, 5000); // Start after 5 seconds
   }
 
   /**
@@ -247,8 +250,8 @@ export class DataCollectionService {
         // For MQTT devices, just ensure we're subscribed
         this.mqttClient.subscribe(`fulsk/devices/${deviceId}/data`);
         console.log(`📡 Started MQTT data collection for device ${deviceId}`);
-      } else {
-        // For HTTP or testing, start simulation
+      } else if (process.env.NODE_ENV === 'development') {
+        // For HTTP or testing, start simulation only in development
         const interval = setInterval(async () => {
           const simulatedData: DeviceData = {
             deviceId,
@@ -269,6 +272,8 @@ export class DataCollectionService {
 
         this.dataGeneratorIntervals.set(deviceId, interval);
         console.log(`🎭 Started simulated data collection for device ${deviceId}`);
+      } else {
+        console.log(`⚠️ Production mode: Device ${deviceId} requires MQTT or HTTP configuration for data collection`);
       }
     } catch (error) {
       console.error('❌ Error starting device data collection:', error);
