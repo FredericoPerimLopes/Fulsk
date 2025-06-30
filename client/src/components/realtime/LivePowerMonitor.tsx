@@ -4,7 +4,7 @@ import {
   Card,
   CardContent,
   Typography,
-  Grid2 as Grid,
+  Grid,
   LinearProgress,
   Chip,
   IconButton,
@@ -231,7 +231,7 @@ export const LivePowerMonitor: React.FC<LivePowerMonitorProps> = ({
 
         <Grid container spacing={2} sx={{ mb: 2 }}>
           {/* Current Power */}
-          <Grid size={{ xs: 6, md: 3 }}>
+          <Grid item xs={6} md={3}>
             <Box sx={{ textAlign: 'center' }}>
               <Typography variant="body2" color="textSecondary">
                 Current Power
@@ -246,7 +246,7 @@ export const LivePowerMonitor: React.FC<LivePowerMonitorProps> = ({
           </Grid>
 
           {/* Peak Power */}
-          <Grid size={{ xs: 6, md: 3 }}>
+          <Grid item xs={6} md={3}>
             <Box sx={{ textAlign: 'center' }}>
               <Typography variant="body2" color="textSecondary">
                 Peak Power
@@ -258,7 +258,7 @@ export const LivePowerMonitor: React.FC<LivePowerMonitorProps> = ({
           </Grid>
 
           {/* Efficiency */}
-          <Grid size={{ xs: 6, md: 3 }}>
+          <Grid item xs={6} md={3}>
             <Box sx={{ textAlign: 'center' }}>
               <Typography variant="body2" color="textSecondary">
                 Efficiency
@@ -286,7 +286,7 @@ export const LivePowerMonitor: React.FC<LivePowerMonitorProps> = ({
           </Grid>
 
           {/* Status */}
-          <Grid size={{ xs: 6, md: 3 }}>
+          <Grid item xs={6} md={3}>
             <Box sx={{ textAlign: 'center' }}>
               <Typography variant="body2" color="textSecondary">
                 Status
@@ -346,7 +346,7 @@ export const LivePowerMonitor: React.FC<LivePowerMonitorProps> = ({
         {/* Additional metrics for non-compact view */}
         {!compact && aggregatedData.voltage && (
           <Grid container spacing={2} sx={{ mt: 2 }}>
-            <Grid size={4}>
+            <Grid item xs={4}>
               <Box sx={{ textAlign: 'center' }}>
                 <Typography variant="body2" color="textSecondary">
                   Voltage
@@ -357,7 +357,7 @@ export const LivePowerMonitor: React.FC<LivePowerMonitorProps> = ({
               </Box>
             </Grid>
             
-            <Grid size={4}>
+            <Grid item xs={4}>
               <Box sx={{ textAlign: 'center' }}>
                 <Typography variant="body2" color="textSecondary">
                   Current
@@ -368,7 +368,7 @@ export const LivePowerMonitor: React.FC<LivePowerMonitorProps> = ({
               </Box>
             </Grid>
             
-            <Grid size={4}>
+            <Grid item xs={4}>
               <Box sx={{ textAlign: 'center' }}>
                 <Typography variant="body2" color="textSecondary">
                   Temperature

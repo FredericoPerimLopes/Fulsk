@@ -153,6 +153,7 @@ export interface Alert {
   timestamp: string;
   acknowledged: boolean;
   read?: boolean;
+  isNew?: boolean;
 }
 
 export interface ApiResponse<T> {

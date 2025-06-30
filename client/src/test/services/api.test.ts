@@ -4,32 +4,28 @@ import { apiService } from '../../services/api';
 import type { AuthResponse, LoginCredentials, RegisterData, Device } from '../../types/api';
 
 // Mock axios
-vi.mock('axios', () => ({
-  default: {
-    create: vi.fn(() => ({
-      post: vi.fn(),
-      get: vi.fn(),
-      put: vi.fn(),
-      delete: vi.fn(),
-      interceptors: {
-        request: { use: vi.fn() },
-        response: { use: vi.fn() },
-      },
-    })),
+vi.mock('axios', () => {
+  const mockApi = {
+    post: vi.fn(),
     get: vi.fn(),
-  },
-}));
+    put: vi.fn(),
+    delete: vi.fn(),
+    interceptors: {
+      request: { use: vi.fn() },
+      response: { use: vi.fn() },
+    },
+  };
+  
+  return {
+    default: {
+      create: vi.fn(() => mockApi),
+      get: vi.fn(),
+    },
+  };
+});
 
-const mockApi = {
-  post: vi.fn(),
-  get: vi.fn(),
-  put: vi.fn(),
-  delete: vi.fn(),
-  interceptors: {
-    request: { use: vi.fn() },
-    response: { use: vi.fn() },
-  },
-};
+// Get access to the mocked API instance
+const getMockApi = () => vi.mocked(axios.create)();
 
 const mockUser = {
   id: '1',
@@ -90,8 +86,7 @@ const mockDevice: Device = {
 describe('ApiService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(axios.create).mockReturnValue(mockApi);
-    // Clear localStorage
+    // Clear localStorage  
     localStorage.clear();
   });
 
@@ -107,6 +102,7 @@ describe('ApiService', () => {
           password: 'password',
         };
 
+        const mockApi = getMockApi();
         mockApi.post.mockResolvedValue({
           data: { data: mockAuthResponse },
         });

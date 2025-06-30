@@ -8,7 +8,7 @@ import {
   Popover,
   Card,
   CardContent,
-  Grid2 as Grid,
+  Grid,
   LinearProgress
 } from '@mui/material';
 import {
@@ -148,7 +148,7 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
                 </Typography>
                 
                 <Grid container spacing={2}>
-                  <Grid size={6}>
+                  <Grid item xs={6}>
                     <Typography variant="body2" color="textSecondary">
                       Status
                     </Typography>
@@ -157,7 +157,7 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
                     </Typography>
                   </Grid>
                   
-                  <Grid size={6}>
+                  <Grid item xs={6}>
                     <Typography variant="body2" color="textSecondary">
                       Network
                     </Typography>
@@ -168,7 +168,7 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
                   
                   {isConnected && (
                     <>
-                      <Grid size={6}>
+                      <Grid item xs={6}>
                         <Typography variant="body2" color="textSecondary">
                           Latency
                         </Typography>
@@ -177,7 +177,7 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
                         </Typography>
                       </Grid>
                       
-                      <Grid size={6}>
+                      <Grid item xs={6}>
                         <Typography variant="body2" color="textSecondary">
                           Uptime
                         </Typography>
@@ -188,7 +188,7 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
                     </>
                   )}
                   
-                  <Grid size={6}>
+                  <Grid item xs={6}>
                     <Typography variant="body2" color="textSecondary">
                       Data Received
                     </Typography>
@@ -197,7 +197,7 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
                     </Typography>
                   </Grid>
                   
-                  <Grid size={6}>
+                  <Grid item xs={6}>
                     <Typography variant="body2" color="textSecondary">
                       Reconnect Attempts
                     </Typography>
@@ -207,7 +207,7 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
                   </Grid>
                   
                   {lastSync && (
-                    <Grid size={12}>
+                    <Grid item xs={12}>
                       <Typography variant="body2" color="textSecondary">
                         Last Sync
                       </Typography>
@@ -264,7 +264,7 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
         )}
         
         <Grid container spacing={2}>
-          <Grid size={6}>
+          <Grid item xs={6}>
             <Typography variant="body2" color="textSecondary">
               Connection Status
             </Typography>
@@ -276,7 +276,7 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
             />
           </Grid>
           
-          <Grid size={6}>
+          <Grid item xs={6}>
             <Typography variant="body2" color="textSecondary">
               Network Status
             </Typography>
@@ -290,7 +290,7 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
           
           {isConnected && (
             <>
-              <Grid size={12}>
+              <Grid item xs={12}>
                 <Typography variant="body2" color="textSecondary">
                   Connection Quality
                 </Typography>
@@ -304,7 +304,7 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
                 </Box>
               </Grid>
               
-              <Grid size={6}>
+              <Grid item xs={6}>
                 <Typography variant="body2" color="textSecondary">
                   Connected Since
                 </Typography>
@@ -313,7 +313,7 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
                 </Typography>
               </Grid>
               
-              <Grid size={6}>
+              <Grid item xs={6}>
                 <Typography variant="body2" color="textSecondary">
                   Uptime
                 </Typography>
@@ -324,7 +324,7 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
             </>
           )}
           
-          <Grid size={6}>
+          <Grid item xs={6}>
             <Typography variant="body2" color="textSecondary">
               Data Points
             </Typography>
@@ -333,7 +333,7 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
             </Typography>
           </Grid>
           
-          <Grid size={6}>
+          <Grid item xs={6}>
             <Typography variant="body2" color="textSecondary">
               Failed Attempts
             </Typography>

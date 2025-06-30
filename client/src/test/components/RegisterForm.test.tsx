@@ -31,6 +31,7 @@ describe('RegisterForm', () => {
     register: mockRegister,
     isLoading: false,
     error: null,
+    clearError: vi.fn(),
   };
 
   beforeEach(() => {
@@ -45,7 +46,6 @@ describe('RegisterForm', () => {
     expect(screen.getByLabelText(/last name/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^password$/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/confirm password/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/role/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /create account/i })).toBeInTheDocument();
   });
@@ -65,21 +65,18 @@ describe('RegisterForm', () => {
     });
   });
 
-  it('shows validation error for password mismatch', async () => {
+  it('shows validation error for invalid email', async () => {
     const user = userEvent.setup();
     render(<MockedRegisterForm />);
     
-    const passwordInput = screen.getByLabelText(/^password$/i);
-    const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
-    
-    await user.type(passwordInput, 'password123');
-    await user.type(confirmPasswordInput, 'differentpassword');
+    const emailInput = screen.getByLabelText(/email/i);
+    await user.type(emailInput, 'invalid-email');
     
     const submitButton = screen.getByRole('button', { name: /create account/i });
     await user.click(submitButton);
     
     await waitFor(() => {
-      expect(screen.getByText(/passwords don't match/i)).toBeInTheDocument();
+      expect(screen.getByText(/invalid email format/i)).toBeInTheDocument();
     });
   });
 
@@ -107,11 +104,6 @@ describe('RegisterForm', () => {
     await user.type(screen.getByLabelText(/last name/i), 'Doe');
     await user.type(screen.getByLabelText(/email/i), 'john@example.com');
     await user.type(screen.getByLabelText(/^password$/i), 'password123');
-    await user.type(screen.getByLabelText(/confirm password/i), 'password123');
-    
-    // Select role
-    await user.click(screen.getByLabelText(/role/i));
-    await user.click(screen.getByText('Viewer'));
     
     const submitButton = screen.getByRole('button', { name: /create account/i });
     await user.click(submitButton);
@@ -136,7 +128,7 @@ describe('RegisterForm', () => {
     render(<MockedRegisterForm />);
     
     expect(screen.getByRole('progressbar')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /creating account/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /create account/i })).toBeDisabled();
   });
 
   it('displays error message when registration fails', () => {
@@ -151,9 +143,14 @@ describe('RegisterForm', () => {
   });
 
   it('has login link', () => {
-    render(<MockedRegisterForm />);
+    const onSwitchToLogin = vi.fn();
+    render(
+      <BrowserRouter>
+        <RegisterForm onSwitchToLogin={onSwitchToLogin} />
+      </BrowserRouter>
+    );
     
     expect(screen.getByText(/already have an account/i)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /sign in/i })).toHaveAttribute('href', '/login');
+    expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
   });
 });

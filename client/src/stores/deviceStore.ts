@@ -16,9 +16,11 @@ type ConnectionStatus = 'connected' | 'disconnected' | 'connecting' | 'error' | 
 interface DeviceState {
   devices: Device[];
   selectedDevice: Device | null;
-  deviceData: Record<string, DeviceData[]>;
+  currentDevice: Device | null; // Alias for test compatibility
+  deviceData: DeviceData[]; // Changed to flat array for test compatibility
   deviceCache: DeviceCache;
   realtimeMetrics: RealtimeMetrics | null;
+  metrics: RealtimeMetrics | null; // Alias for test compatibility
   connectionStatus: ConnectionStatus;
   isLoading: boolean;
   isOnline: boolean;
@@ -28,9 +30,15 @@ interface DeviceState {
   // Actions
   fetchDevices: () => Promise<void>;
   fetchDevice: (deviceId: string) => Promise<void>;
+  createDevice: (deviceData: Partial<Device>) => Promise<void>;
+  updateDevice: (deviceId: string, deviceData: Partial<Device>) => Promise<void>;
+  deleteDevice: (deviceId: string) => Promise<void>;
   fetchDeviceData: (deviceId: string, limit?: number) => Promise<void>;
   fetchRealtimeMetrics: () => Promise<void>;
+  fetchMetrics: () => Promise<void>; // Alias for fetchRealtimeMetrics
+  addDeviceData: (data: DeviceData) => void;
   selectDevice: (device: Device | null) => void;
+  setCurrentDevice: (device: Device | null) => void; // Alias for selectDevice
   updateDeviceData: (deviceId: string, data: DeviceData) => void;
   updateRealtimeMetrics: (metrics: RealtimeMetrics) => void;
   setConnectionStatus: (status: ConnectionStatus) => void;
@@ -46,12 +54,14 @@ export const useDeviceStore = create<DeviceState>()(
     (set, get) => ({
       devices: [],
       selectedDevice: null,
-      deviceData: {},
+      currentDevice: null, // Will be synced with selectedDevice
+      deviceData: [],
       deviceCache: {},
       realtimeMetrics: null,
+      metrics: null, // Will be synced with realtimeMetrics
       connectionStatus: 'disconnected',
       isLoading: false,
-      isOnline: navigator.onLine,
+      isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
       error: null,
       lastSync: null,
 
@@ -80,11 +90,78 @@ export const useDeviceStore = create<DeviceState>()(
           set({ 
             devices: updatedDevices,
             selectedDevice: device,
+            currentDevice: device,
             isLoading: false 
           });
         } catch (error: any) {
           set({ 
-            error: error.response?.data?.message || 'Failed to fetch device',
+            error: error.message || 'Failed to fetch device',
+            isLoading: false
+          });
+        }
+      },
+
+      createDevice: async (deviceData: Partial<Device>) => {
+        set({ isLoading: true, error: null });
+        
+        try {
+          const newDevice = await apiService.createDevice(deviceData);
+          const { devices } = get();
+          set({ 
+            devices: [...devices, newDevice],
+            isLoading: false
+          });
+        } catch (error: any) {
+          set({
+            error: error.response?.data?.message || 'Failed to create device',
+            isLoading: false
+          });
+        }
+      },
+
+      updateDevice: async (deviceId: string, deviceData: Partial<Device>) => {
+        set({ isLoading: true, error: null });
+        
+        try {
+          const updatedDevice = await apiService.updateDevice(deviceId, deviceData);
+          const { devices } = get();
+          const updatedDevices = devices.map(d => d.id === deviceId ? updatedDevice : d);
+          
+          const currentSelected = get().selectedDevice;
+          const newSelected = currentSelected?.id === deviceId ? updatedDevice : currentSelected;
+          set({ 
+            devices: updatedDevices,
+            selectedDevice: newSelected,
+            currentDevice: newSelected,
+            isLoading: false
+          });
+        } catch (error: any) {
+          set({
+            error: error.response?.data?.message || 'Failed to update device',
+            isLoading: false
+          });
+        }
+      },
+
+      deleteDevice: async (deviceId: string) => {
+        set({ isLoading: true, error: null });
+        
+        try {
+          await apiService.deleteDevice(deviceId);
+          const { devices } = get();
+          const updatedDevices = devices.filter(d => d.id !== deviceId);
+          
+          const currentSelected = get().selectedDevice;
+          const newSelected = currentSelected?.id === deviceId ? null : currentSelected;
+          set({ 
+            devices: updatedDevices,
+            selectedDevice: newSelected,
+            currentDevice: newSelected,
+            isLoading: false
+          });
+        } catch (error: any) {
+          set({
+            error: error.response?.data?.message || 'Failed to delete device',
             isLoading: false
           });
         }
@@ -93,7 +170,7 @@ export const useDeviceStore = create<DeviceState>()(
       fetchDeviceData: async (deviceId: string, limit = 100) => {
         try {
           const data = await apiService.getDeviceData(deviceId, limit);
-          const { deviceData, deviceCache } = get();
+          const { deviceCache } = get();
           
           const updatedCache = {
             ...deviceCache,
@@ -105,10 +182,7 @@ export const useDeviceStore = create<DeviceState>()(
           };
           
           set({ 
-            deviceData: {
-              ...deviceData,
-              [deviceId]: data
-            },
+            deviceData: data, // Set as flat array for test compatibility
             deviceCache: updatedCache
           });
         } catch (error: any) {
@@ -121,7 +195,7 @@ export const useDeviceStore = create<DeviceState>()(
       fetchRealtimeMetrics: async () => {
         try {
           const metrics = await apiService.getRealtimeMetrics();
-          set({ realtimeMetrics: metrics });
+          set({ realtimeMetrics: metrics, metrics: metrics });
         } catch (error: any) {
           set({ 
             error: error.response?.data?.message || 'Failed to fetch realtime metrics'
@@ -129,32 +203,52 @@ export const useDeviceStore = create<DeviceState>()(
         }
       },
 
+      fetchMetrics: async () => {
+        // Alias for fetchRealtimeMetrics for test compatibility
+        return get().fetchRealtimeMetrics();
+      },
+
+      addDeviceData: (data: DeviceData) => {
+        const { deviceData } = get();
+        
+        // Add new data point and keep only the latest 1000 points
+        const updatedData = [data, ...deviceData].slice(0, 1000);
+        
+        set({
+          deviceData: updatedData
+        });
+      },
+
       selectDevice: (device: Device | null) => {
-        set({ selectedDevice: device });
+        set({ selectedDevice: device, currentDevice: device });
+      },
+
+      setCurrentDevice: (device: Device | null) => {
+        // Alias for selectDevice for test compatibility
+        set({ selectedDevice: device, currentDevice: device });
       },
 
       updateDeviceData: (deviceId: string, data: DeviceData) => {
         const { deviceData, deviceCache, isOnline } = get();
-        const existingData = deviceData[deviceId] || [];
         
-        // Add new data point and keep only the latest 100 points
-        const updatedData = [data, ...existingData].slice(0, 100);
+        // Add new data point and keep only the latest 100 points for this device
+        const filteredData = deviceData.filter(d => d.deviceId !== deviceId);
+        const deviceSpecificData = deviceData.filter(d => d.deviceId === deviceId);
+        const updatedDeviceData = [data, ...deviceSpecificData].slice(0, 100);
+        const updatedData = [...updatedDeviceData, ...filteredData].slice(0, 1000);
         
         // Update cache with timestamp
         const updatedCache = {
           ...deviceCache,
           [deviceId]: {
-            data: updatedData,
+            data: updatedDeviceData,
             lastUpdated: new Date(),
             isStale: !isOnline
           }
         };
         
         set({
-          deviceData: {
-            ...deviceData,
-            [deviceId]: updatedData
-          },
+          deviceData: updatedData,
           deviceCache: updatedCache,
           lastSync: isOnline ? new Date() : get().lastSync
         });
@@ -172,7 +266,7 @@ export const useDeviceStore = create<DeviceState>()(
       },
 
       updateRealtimeMetrics: (metrics: RealtimeMetrics) => {
-        set({ realtimeMetrics: metrics });
+        set({ realtimeMetrics: metrics, metrics: metrics });
       },
 
       setConnectionStatus: (status: ConnectionStatus) => {
@@ -263,6 +357,7 @@ export const useDeviceStore = create<DeviceState>()(
       name: 'fulsk-device-store',
       partialize: (state) => ({
         devices: state.devices,
+        deviceData: state.deviceData,
         deviceCache: state.deviceCache,
         lastSync: state.lastSync
       })

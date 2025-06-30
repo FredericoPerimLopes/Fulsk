@@ -12,7 +12,7 @@ import {
   ApiResponse
 } from '../types/api';
 
-class ApiService {
+export class ApiService {
   private api: AxiosInstance;
 
   constructor() {
@@ -168,7 +168,10 @@ class ApiService {
 
   // Health check
   async getHealth(): Promise<any> {
-    const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/health`);
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+    // Health endpoint should be at root level, not under /api
+    const healthUrl = baseUrl.replace('/api', '') + '/health';
+    const response = await axios.get(healthUrl);
     return response.data;
   }
 

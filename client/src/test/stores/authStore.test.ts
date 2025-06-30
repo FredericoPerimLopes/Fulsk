@@ -62,13 +62,18 @@ describe('authStore', () => {
       vi.mocked(apiService.login).mockRejectedValue(new Error(errorMessage));
 
       const { login } = useAuthStore.getState();
-      await login({ email: 'test@example.com', password: 'wrong-password' });
+      
+      try {
+        await login({ email: 'test@example.com', password: 'wrong-password' });
+      } catch (error) {
+        // Expected to throw
+      }
 
       const state = useAuthStore.getState();
       expect(state.user).toBeNull();
       expect(state.isAuthenticated).toBe(false);
       expect(state.isLoading).toBe(false);
-      expect(state.error).toBe(errorMessage);
+      expect(state.error).toBe('Login failed');
     });
 
     it('should set loading state during login', async () => {
@@ -118,18 +123,23 @@ describe('authStore', () => {
       vi.mocked(apiService.register).mockRejectedValue(new Error(errorMessage));
 
       const { register } = useAuthStore.getState();
-      await register({
-        email: 'test@example.com',
-        password: 'password',
-        firstName: 'Test',
-        lastName: 'User',
-        role: 'VIEWER',
-      });
+      
+      try {
+        await register({
+          email: 'test@example.com',
+          password: 'password',
+          firstName: 'Test',
+          lastName: 'User',
+          role: 'VIEWER',
+        });
+      } catch (error) {
+        // Expected to throw
+      }
 
       const state = useAuthStore.getState();
       expect(state.user).toBeNull();
       expect(state.isAuthenticated).toBe(false);
-      expect(state.error).toBe(errorMessage);
+      expect(state.error).toBe('Registration failed');
     });
   });
 

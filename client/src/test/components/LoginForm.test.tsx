@@ -31,6 +31,7 @@ describe('LoginForm', () => {
     login: mockLogin,
     isLoading: false,
     error: null,
+    clearError: vi.fn(),
   };
 
   beforeEach(() => {
@@ -118,9 +119,14 @@ describe('LoginForm', () => {
   });
 
   it('has register link', () => {
-    render(<MockedLoginForm />);
+    const onSwitchToRegister = vi.fn();
+    render(
+      <BrowserRouter>
+        <LoginForm onSwitchToRegister={onSwitchToRegister} />
+      </BrowserRouter>
+    );
     
     expect(screen.getByText(/don't have an account/i)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /sign up/i })).toHaveAttribute('href', '/register');
+    expect(screen.getByRole('button', { name: /sign up/i })).toBeInTheDocument();
   });
 });
