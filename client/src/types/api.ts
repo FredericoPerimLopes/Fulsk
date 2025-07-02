@@ -161,3 +161,144 @@ export interface ApiResponse<T> {
   data: T;
   count?: number;
 }
+
+// Inverter-specific SunSpec data types
+export interface InverterConfiguration {
+  ipAddress: string;
+  port: number;
+  unitId: number;
+  pollInterval: number; // in seconds
+  timeout: number; // in milliseconds
+  sunspecDeviceId: number;
+  enabled: boolean;
+  registerMap: {
+    [key: string]: {
+      address: number;
+      type: 'uint16' | 'int16' | 'uint32' | 'int32' | 'float32' | 'string';
+      scaleFactor?: number;
+      units?: string;
+    };
+  };
+}
+
+export interface InverterData extends DeviceData {
+  // SunSpec model data
+  acPowerTotal: number;
+  acPowerPhaseA?: number;
+  acPowerPhaseB?: number;
+  acPowerPhaseC?: number;
+  acVoltageAB?: number;
+  acVoltageBC?: number;
+  acVoltageCA?: number;
+  acVoltageAN?: number;
+  acVoltageBN?: number;
+  acVoltageCN?: number;
+  acCurrentA?: number;
+  acCurrentB?: number;
+  acCurrentC?: number;
+  acFrequency: number;
+  dcPower: number;
+  dcVoltage: number;
+  dcCurrent: number;
+  cabinetTemperature: number;
+  heatsinkTemperature?: number;
+  transformerTemperature?: number;
+  otherTemperature?: number;
+  operatingState: InverterOperatingState;
+  eventFlags: number;
+  manufacturerEventFlags?: number;
+  // Energy production
+  energyLifetime: number;
+  energyDaily: number;
+  energyMonthly: number;
+  energyYearly: number;
+  // Efficiency and performance
+  systemEfficiency: number;
+  dcToAcEfficiency: number;
+  weightedEfficiency?: number;
+  // Connection and communication
+  connectionQuality: number; // 0-100%
+  communicationErrors: number;
+  lastSuccessfulRead: string;
+  registerErrors: string[];
+}
+
+export const InverterOperatingState = {
+  OFF: 'OFF',
+  SLEEPING: 'SLEEPING',
+  STARTING: 'STARTING',
+  MPPT: 'MPPT',
+  THROTTLED: 'THROTTLED',
+  SHUTTING_DOWN: 'SHUTTING_DOWN',
+  FAULT: 'FAULT',
+  STANDBY: 'STANDBY',
+  UNKNOWN: 'UNKNOWN'
+} as const;
+
+export type InverterOperatingState = typeof InverterOperatingState[keyof typeof InverterOperatingState];
+
+export interface InverterAlert extends Alert {
+  eventCode?: number;
+  sunspecAlarmCode?: number;
+  registerAddress?: number;
+  rawValue?: number;
+  expectedValue?: number;
+  troubleshootingSteps?: string[];
+}
+
+export interface InverterDiagnosticData {
+  deviceId: string;
+  timestamp: string;
+  connectionTest: {
+    success: boolean;
+    responseTime: number;
+    error?: string;
+  };
+  registerReads: {
+    [address: number]: {
+      success: boolean;
+      value?: number | string;
+      error?: string;
+      timestamp: string;
+    };
+  };
+  communicationStats: {
+    totalRequests: number;
+    successfulRequests: number;
+    failedRequests: number;
+    averageResponseTime: number;
+    lastSuccessfulRead: string;
+    errorRate: number;
+  };
+  deviceInfo: {
+    manufacturer?: string;
+    model?: string;
+    serialNumber?: string;
+    firmwareVersion?: string;
+    sunspecVersion?: string;
+    supportedModels?: number[];
+  };
+}
+
+export interface InverterPerformanceMetrics {
+  deviceId: string;
+  period: 'hour' | 'day' | 'week' | 'month' | 'year';
+  startTime: string;
+  endTime: string;
+  totalEnergy: number;
+  averagePower: number;
+  peakPower: number;
+  minimumPower: number;
+  averageEfficiency: number;
+  peakEfficiency: number;
+  averageTemperature: number;
+  peakTemperature: number;
+  uptime: number; // percentage
+  communicationUptime: number; // percentage
+  dataPoints: {
+    timestamp: string;
+    power: number;
+    efficiency: number;
+    temperature: number;
+  }[];
+}

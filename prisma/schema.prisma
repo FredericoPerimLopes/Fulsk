@@ -84,6 +84,12 @@ model Device {
   
   deviceData   DeviceData[]
   alerts       Alert[]
+  
+  // SunSpec relationships
+  inverterData         InverterData[]
+  inverterMpptModules  InverterMpptModule[]
+  inverterConfiguration InverterConfiguration?
+  inverterDiagnostics  InverterDiagnostics[]
 
   @@map("devices")
 }
@@ -132,6 +138,215 @@ model Alert {
   @@map("alerts")
 }
 
+// SunSpec-specific models for comprehensive inverter data
+model InverterData {
+  deviceId     String
+  timestamp    DateTime     @default(now()) @db.Timestamptz
+  
+  // SunSpec Common identification
+  sunspecModel Int          // SunSpec model number (101, 102, 103, etc.)
+  deviceClass  String?      // Device class from SunSpec
+  
+  // AC Measurements (Models 101, 102, 103)
+  acCurrent           Float?       // Total AC current (A)
+  acCurrentPhaseA     Float?       // Phase A current (A)
+  acCurrentPhaseB     Float?       // Phase B current (A)
+  acCurrentPhaseC     Float?       // Phase C current (A)
+  
+  acVoltagePhaseA     Float?       // Phase A voltage (V)
+  acVoltagePhaseB     Float?       // Phase B voltage (V)
+  acVoltagePhaseC     Float?       // Phase C voltage (V)
+  acVoltagePhaseAB    Float?       // Phase AB voltage (V)
+  acVoltagePhaseBC    Float?       // Phase BC voltage (V)
+  acVoltagePhaseCA    Float?       // Phase CA voltage (V)
+  
+  acPower             Float?       // AC real power (W)
+  acPowerApparent     Float?       // AC apparent power (VA)
+  acPowerReactive     Float?       // AC reactive power (VAr)
+  acPowerFactor       Float?       // Power factor (%)
+  acFrequency         Float?       // Line frequency (Hz)
+  
+  // DC Measurements
+  dcCurrent           Float?       // DC current (A)
+  dcVoltage           Float?       // DC voltage (V)
+  dcPower             Float?       // DC power (W)
+  
+  // Energy Counters
+  acEnergyLifetime    Float?       // AC energy lifetime (Wh)
+  dcEnergyLifetime    Float?       // DC energy lifetime (Wh)
+  acEnergyToday       Float?       // AC energy today (Wh)
+  
+  // Temperature Measurements
+  temperatureCabinet    Float?     // Cabinet temperature (°C)
+  temperatureHeatSink   Float?     // Heat sink temperature (°C)
+  temperatureTransformer Float?    // Transformer temperature (°C)
+  temperatureOther      Float?     // Other temperature (°C)
+  
+  // Operating State and Events
+  operatingState      InverterOperatingState?
+  eventBitfield1      BigInt?      // Event bitfield 1
+  eventBitfield2      BigInt?      // Event bitfield 2
+  
+  // Scale Factors (for proper data interpretation)
+  currentScaleFactor  Int?         // A_SF
+  voltageScaleFactor  Int?         // V_SF
+  powerScaleFactor    Int?         // W_SF
+  frequencyScaleFactor Int?        // Hz_SF
+  
+  // Performance Metrics
+  efficiency          Float?       // Overall efficiency (%)
+  
+  // Relationships
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  mpptModules InverterMpptModule[]
+
+  // Composite primary key for TimescaleDB compatibility
+  @@id([deviceId, timestamp])
+  @@index([timestamp])
+  @@index([deviceId, sunspecModel])
+  @@index([operatingState])
+  @@map("inverter_data")
+}
+
+model InverterMpptModule {
+  id           String   @id @default(cuid())
+  deviceId     String
+  timestamp    DateTime @db.Timestamptz
+  
+  // MPPT Module identification (Model 160)
+  moduleId     Int      // Module ID
+  moduleIdStr  String?  // Module ID string
+  
+  // DC Measurements per module
+  dcCurrent    Float?   // Module DC current (A)
+  dcVoltage    Float?   // Module DC voltage (V)
+  dcPower      Float?   // Module DC power (W)
+  dcEnergy     Float?   // Module lifetime energy (Wh)
+  
+  // Module status
+  operatingState MpptOperatingState?
+  temperature    Float?           // Module temperature (°C)
+  timestamp_secs Int?            // Module timestamp
+  eventBitfield  BigInt?         // Module-specific events
+  
+  // Relationships
+  device      Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  inverterData InverterData @relation(fields: [deviceId, timestamp], references: [deviceId, timestamp], onDelete: Cascade)
+  
+  @@index([deviceId, timestamp])
+  @@index([moduleId])
+  @@map("inverter_mppt_modules")
+}
+
+model InverterConfiguration {
+  id           String   @id @default(cuid())
+  deviceId     String   @unique
+  
+  // SunSpec Model Configuration
+  supportedModels    Int[]        // Supported SunSpec model numbers
+  primaryModel       Int          // Primary model (101, 102, or 103)
+  
+  // Device Identification (Model 1)
+  manufacturer       String?      // Manufacturer name
+  model             String?      // Model name
+  options           String?      // Option codes
+  version           String?      // Version string
+  serialNumber      String?      // Serial number
+  deviceAddress     Int?         // Modbus device address
+  
+  // Nameplate Ratings (Model 120)
+  ratedPower        Float?       // Nameplate power rating (W)
+  ratedVoltage      Float?       // Nameplate voltage rating (V)
+  ratedCurrent      Float?       // Nameplate current rating (A)
+  ratedFrequency    Float?       // Nameplate frequency (Hz)
+  
+  // Settings and Limits
+  maxPowerOutput    Float?       // Maximum power output limit (W)
+  powerFactorTarget Float?       // Target power factor
+  voltageRegulation Boolean?     // Voltage regulation enabled
+  
+  // MPPT Configuration (Model 160)
+  mpptModuleCount   Int?         // Number of MPPT modules
+  timestampPeriod   Int?         // Timestamp reporting period
+  
+  // Communication Settings
+  sunspecAddress    Int?         // SunSpec base address
+  modelOffset       Int?         // Model offset from base
+  
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  
+  // Relationships
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  
+  @@map("inverter_configurations")
+}
+
+model InverterDiagnostics {
+  id           String   @id @default(cuid())
+  deviceId     String
+  timestamp    DateTime @default(now()) @db.Timestamptz
+  
+  // Event and Fault Information
+  eventType    InverterEventType
+  eventCode    String           // SunSpec event code
+  severity     AlertSeverity
+  message      String
+  
+  // Event Details
+  isActive     Boolean          @default(true)
+  eventData    Json?            // Additional event data
+  
+  // Event Bitfield Analysis
+  groundFault        Boolean?
+  inputOverVoltage   Boolean?
+  inputUnderVoltage  Boolean?
+  inputOverCurrent   Boolean?
+  dcDisconnect       Boolean?
+  cabinetOpen        Boolean?
+  manualShutdown     Boolean?
+  overTemp           Boolean?
+  underTemp          Boolean?
+  memoryLoss         Boolean?
+  arcDetection       Boolean?
+  testFailed         Boolean?
+  blownFuse          Boolean?
+  
+  resolvedAt   DateTime?
+  
+  // Relationships
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  
+  @@index([deviceId, timestamp])
+  @@index([eventType, severity])
+  @@index([isActive])
+  @@map("inverter_diagnostics")
+}
+
+model SunSpecModel {
+  id           String   @id @default(cuid())
+  modelNumber  Int      @unique
+  name         String
+  description  String?
+  version      String?
+  
+  // Model specifications
+  modelType    SunSpecModelType
+  blockLength  Int              // Fixed block length
+  
+  // Data points schema (stored as JSON for flexibility)
+  dataPoints   Json             // Schema definition for data points
+  
+  // Validation rules
+  mandatoryPoints String[]      // List of mandatory data points
+  optionalPoints  String[]      // List of optional data points
+  
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  
+  @@map("sunspec_models")
+}
+
 // Enums
 enum UserRole {
   ADMIN
@@ -158,6 +373,7 @@ enum CommunicationProtocol {
   MQTT
   HTTP
   MODBUS
+  SUNSPEC_MODBUS
 }
 
 enum AlertType {
@@ -168,10 +384,67 @@ enum AlertType {
   DEVICE_ERROR
   MAINTENANCE_DUE
   COMMUNICATION_FAILURE
+  SUNSPEC_EVENT
+  MPPT_FAULT
+  GROUND_FAULT
+  ARC_DETECTION
 }
 
 enum AlertSeverity {
   INFO
   WARNING
   CRITICAL
+}
+
+enum InverterOperatingState {
+  OFF
+  SLEEPING
+  STARTING
+  MPPT
+  THROTTLED
+  SHUTTING_DOWN
+  FAULT
+  STANDBY
+  TEST
+  VENDOR_SPECIFIC
+}
+
+enum MpptOperatingState {
+  OFF
+  SLEEPING
+  STARTING
+  MPPT
+  THROTTLED
+  SHUTTING_DOWN
+  FAULT
+  STANDBY
+  TEST
+}
+
+enum InverterEventType {
+  GROUND_FAULT
+  INPUT_OVER_VOLTAGE
+  INPUT_UNDER_VOLTAGE
+  INPUT_OVER_CURRENT
+  DC_DISCONNECT
+  CABINET_OPEN
+  MANUAL_SHUTDOWN
+  OVER_TEMP
+  UNDER_TEMP
+  MEMORY_LOSS
+  ARC_DETECTION
+  TEST_FAILED
+  BLOWN_FUSE
+  HARDWARE_FAILURE
+  COMMUNICATION_ERROR
+  VENDOR_SPECIFIC
+}
+
+enum SunSpecModelType {
+  COMMON
+  INVERTER
+  METER
+  BATTERY
+  TRACKER
+  EXTENSION
 }

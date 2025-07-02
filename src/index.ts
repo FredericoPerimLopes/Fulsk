@@ -7,6 +7,7 @@ import { Server } from 'socket.io';
 import authRoutes from '@api/auth';
 import deviceRoutes from '@api/devices';
 import realtimeRoutes from '@api/realtime';
+import sunspecRoutes from '@api/sunspec';
 import { DataCollectionService } from '@services/DataCollectionService';
 import { connectDatabase, checkDatabaseHealth } from '@utils/database';
 
@@ -53,6 +54,7 @@ app.get('/health', async (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/devices', deviceRoutes);
 app.use('/api/realtime', realtimeRoutes);
+app.use('/api/sunspec', sunspecRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {
@@ -63,7 +65,8 @@ app.get('/', (req, res) => {
       health: '/health',
       auth: '/api/auth',
       devices: '/api/devices',
-      realtime: '/api/realtime'
+      realtime: '/api/realtime',
+      sunspec: '/api/sunspec'
     }
   });
 });

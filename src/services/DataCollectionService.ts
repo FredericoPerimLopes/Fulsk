@@ -1,18 +1,23 @@
 import { Server } from 'socket.io';
 import mqtt from 'mqtt';
 import cron from 'node-cron';
-import { DeviceData, DeviceStatus } from '@models/Device';
+import { DeviceData, DeviceStatus, DeviceType } from '@models/Device';
 import { DatabaseDeviceService as DeviceService } from '@services/DatabaseDeviceService';
+import { InverterService, InverterData } from '@services/InverterService';
+import { ModbusService } from '@services/ModbusService';
+import { ModbusDeviceConfig, ModbusConnectionStatus } from '@interfaces/ModbusConfig';
 import { CommunicationProtocol } from '@prisma/client';
 
 export class DataCollectionService {
   private ioServer: Server;
   private mqttClient?: mqtt.MqttClient;
   private dataGeneratorIntervals: Map<string, NodeJS.Timeout> = new Map();
+  private modbusPollingIntervals: Map<string, NodeJS.Timeout> = new Map();
 
   constructor(ioServer: Server) {
     this.ioServer = ioServer;
     this.initializeMQTT();
+    this.initializeSunSpec();
     
     // Only start simulation in development mode
     if (process.env.NODE_ENV === 'development') {
@@ -20,6 +25,15 @@ export class DataCollectionService {
     }
     
     this.scheduleDataCleanup();
+  }
+
+  /**
+   * Initialize SunSpec service for Modbus communication
+   */
+  private initializeSunSpec(): void {
+    console.log('⚙️ Initializing SunSpec service for Modbus communication');
+    // SunSpec service is initialized as singleton
+    // Additional setup can be done here if needed
   }
 
   /**
@@ -250,6 +264,9 @@ export class DataCollectionService {
         // For MQTT devices, just ensure we're subscribed
         this.mqttClient.subscribe(`fulsk/devices/${deviceId}/data`);
         console.log(`📡 Started MQTT data collection for device ${deviceId}`);
+      } else if (device.configuration.communicationProtocol === CommunicationProtocol.MODBUS) {
+        // For Modbus devices, start inverter data collection
+        await this.startModbusDataCollection(deviceId, device);
       } else if (process.env.NODE_ENV === 'development') {
         // For HTTP or testing, start simulation only in development
         const interval = setInterval(async () => {
@@ -282,6 +299,184 @@ export class DataCollectionService {
   }
 
   /**
+   * Start Modbus data collection for devices
+   */
+  private async startModbusDataCollection(deviceId: string, device: any): Promise<void> {
+    try {
+      console.log(`🔌 Starting Modbus data collection for device ${deviceId}`);
+
+      // Extract Modbus configuration from device configuration
+      const modbusConfig = this.extractModbusConfiguration(device);
+      if (!modbusConfig) {
+        throw new Error('Invalid Modbus configuration for device');
+      }
+
+      // Initialize inverter if it's an inverter device
+      if (device.type === DeviceType.INVERTER) {
+        await InverterService.initializeModbusConnection(deviceId, modbusConfig);
+        
+        // Discover device information
+        try {
+          const deviceInfo = await InverterService.discoverInverter(deviceId);
+          if (deviceInfo) {
+            console.log(`📋 Discovered inverter: ${deviceInfo.manufacturer} ${deviceInfo.model}`);
+          }
+        } catch (error) {
+          console.warn(`⚠️ Could not discover device info for ${deviceId}, continuing with manual configuration`);
+        }
+
+        // Start automatic data collection
+        await InverterService.startInverterDataCollection(deviceId);
+        
+        // Setup periodic data reading
+        this.setupModbusDataPolling(deviceId, device);
+        
+        console.log(`✅ Started Modbus data collection for inverter ${deviceId}`);
+      } else {
+        console.warn(`⚠️ Modbus protocol not yet supported for device type: ${device.type}`);
+      }
+
+    } catch (error) {
+      console.error(`❌ Failed to start Modbus data collection for device ${deviceId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Extract Modbus configuration from device configuration
+   */
+  private extractModbusConfiguration(device: any): Partial<ModbusDeviceConfig> | null {
+    try {
+      const config = device.configuration;
+      
+      // Look for Modbus-specific configuration
+      const modbusConfig = config.modbus || {};
+      
+      // Default configuration if not fully specified
+      const defaultConfig: Partial<ModbusDeviceConfig> = {
+        connection: {
+          host: modbusConfig.host || device.location?.address || 'localhost',
+          port: modbusConfig.port || 502,
+          unitId: modbusConfig.unitId || 1,
+          timeout: modbusConfig.timeout || 5000,
+          retryAttempts: modbusConfig.retryAttempts || 3,
+          retryDelay: modbusConfig.retryDelay || 1000,
+          keepAlive: modbusConfig.keepAlive !== false,
+          maxConnections: 1
+        },
+        sunspec: {
+          baseRegister: modbusConfig.baseRegister || 40000,
+          supportedModels: modbusConfig.supportedModels || [1, 101, 102, 103],
+          autoDiscovery: modbusConfig.autoDiscovery !== false,
+          maxRegistersPerRead: modbusConfig.maxRegistersPerRead || 125,
+          enableCaching: modbusConfig.enableCaching !== false,
+          cacheTimeout: modbusConfig.cacheTimeout || 30000
+        },
+        pollingInterval: device.configuration.dataCollectionInterval || 30,
+        validateData: modbusConfig.validateData !== false,
+        logLevel: modbusConfig.logLevel || 'info'
+      };
+
+      // Validate that we have at least a host
+      if (!defaultConfig.connection?.host) {
+        console.error('Missing required Modbus configuration: host');
+        return null;
+      }
+
+      return defaultConfig;
+    } catch (error) {
+      console.error('Error extracting Modbus configuration:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Setup Modbus data polling
+   */
+  private setupModbusDataPolling(deviceId: string, device: any): void {
+    // Stop existing polling if any
+    const existingInterval = this.modbusPollingIntervals.get(deviceId);
+    if (existingInterval) {
+      clearInterval(existingInterval);
+    }
+
+    // Create polling interval to read and process Modbus data
+    const pollingInterval = (device.configuration.dataCollectionInterval || 30) * 1000;
+    
+    const interval = setInterval(async () => {
+      try {
+        if (device.type === DeviceType.INVERTER) {
+          const inverterData = await InverterService.readInverterData(deviceId);
+          if (inverterData) {
+            await this.processDeviceData(inverterData);
+          }
+        }
+      } catch (error) {
+        console.error(`❌ Error polling Modbus data for device ${deviceId}:`, error);
+      }
+    }, config.pollingInterval * 1000);
+
+    this.dataGeneratorIntervals.set(deviceId, interval);
+  }
+
+  /**
+   * Convert SunSpec data to standard DeviceData format
+   */
+  private convertSunSpecToDeviceData(sunspecData: SunSpecDeviceData): DeviceData {
+    const inverter = sunspecData.inverter;
+    const meter = sunspecData.meter;
+
+    return {
+      deviceId: sunspecData.deviceId,
+      timestamp: sunspecData.timestamp,
+      power: inverter?.acPower || meter?.acPower || 0,
+      voltage: inverter?.acVoltageAN || inverter?.acVoltageAB || meter?.acVoltageAN || 0,
+      current: inverter?.acCurrent || meter?.acCurrent || 0,
+      temperature: inverter?.cabinetTemperature || 0,
+      irradiance: undefined, // Not available in SunSpec standard models
+      efficiency: inverter?.efficiency,
+      energyToday: this.calculateDailyEnergy(inverter?.acEnergyWh || meter?.acEnergyWh || 0),
+      energyTotal: inverter?.acEnergyWh || meter?.acEnergyWh || 0,
+      status: this.convertSunSpecStatusToDeviceStatus(inverter?.operatingState)
+    };
+  }
+
+  /**
+   * Convert SunSpec operating state to DeviceStatus
+   */
+  private convertSunSpecStatusToDeviceStatus(operatingState?: number): DeviceStatus {
+    if (!operatingState) return DeviceStatus.OFFLINE;
+
+    switch (operatingState) {
+      case 4: // MPPT (normal operation)
+        return DeviceStatus.ONLINE;
+      case 1: // Off
+      case 2: // Sleeping
+      case 8: // Standby
+        return DeviceStatus.OFFLINE;
+      case 7: // Fault
+        return DeviceStatus.ERROR;
+      case 3: // Starting
+      case 6: // Shutting down
+        return DeviceStatus.ONLINE; // Transitional states
+      case 5: // Throttled
+        return DeviceStatus.ONLINE; // Still producing power
+      default:
+        return DeviceStatus.OFFLINE;
+    }
+  }
+
+  /**
+   * Calculate daily energy from total energy
+   * This is a simplified calculation - in production, you'd store daily reset values
+   */
+  private calculateDailyEnergy(totalEnergy: number): number {
+    // For now, return a percentage of total energy as daily energy
+    // In production, this would be calculated based on stored daily reset values
+    return Math.min(totalEnergy * 0.1, 50); // Assume max 50 kWh per day
+  }
+
+  /**
    * Stop data collection for a specific device
    */
   public stopDeviceDataCollection(deviceId: string): void {
@@ -292,8 +487,16 @@ export class DataCollectionService {
       console.log(`⏹️ Stopped data collection for device ${deviceId}`);
     }
 
+    // Stop MQTT subscription
     if (this.mqttClient) {
       this.mqttClient.unsubscribe(`fulsk/devices/${deviceId}/data`);
+    }
+
+    // Stop SunSpec data collection
+    if (this.sunspecDevices.has(deviceId)) {
+      sunspecService.stopPolling(deviceId);
+      this.sunspecDevices.delete(deviceId);
+      console.log(`🔌 Stopped SunSpec data collection for device ${deviceId}`);
     }
   }
 
@@ -360,9 +563,35 @@ export class DataCollectionService {
   }
 
   /**
+   * Get SunSpec device information
+   */
+  public getSunSpecDevices(): { [deviceId: string]: any } {
+    const result: { [deviceId: string]: any } = {};
+    
+    for (const [deviceId, config] of this.sunspecDevices) {
+      result[deviceId] = {
+        configuration: config,
+        connectionState: modbusService.getConnectionState(deviceId),
+        discoveredModels: sunspecService.getDiscoveredModels(deviceId)
+      };
+    }
+    
+    return result;
+  }
+
+  /**
+   * Get health status of all Modbus connections
+   */
+  public async getModbusHealthStatus(): Promise<{ [deviceId: string]: boolean }> {
+    return await modbusService.healthCheck();
+  }
+
+  /**
    * Cleanup resources
    */
-  public cleanup(): void {
+  public async cleanup(): Promise<void> {
+    console.log('🧹 Cleaning up data collection service...');
+
     // Clear all intervals
     for (const [deviceId, interval] of this.dataGeneratorIntervals) {
       clearInterval(interval);
@@ -374,6 +603,16 @@ export class DataCollectionService {
       this.mqttClient.end();
     }
 
-    console.log('🧹 Data collection service cleaned up');
+    // Cleanup SunSpec devices
+    for (const deviceId of this.sunspecDevices.keys()) {
+      await sunspecService.removeDevice(deviceId);
+    }
+    this.sunspecDevices.clear();
+
+    // Cleanup SunSpec and Modbus services
+    await sunspecService.cleanup();
+    await modbusService.cleanup();
+
+    console.log('✅ Data collection service cleaned up');
   }
 }
