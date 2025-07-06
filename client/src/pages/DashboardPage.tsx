@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   Box,
-  GridLegacy as Grid,
+  Grid,
   Card,
   CardContent,
   Typography,
@@ -243,7 +243,7 @@ export const DashboardPage: React.FC = () => {
         {/* Traditional Overview Dashboard */}
         <Grid container spacing={3}>
           {/* Metrics Cards */}
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <Grid item xs={12} sm={6} md={3}>
             <MetricCard
               title="Total Power"
               value={realtimeMetrics?.totalPower?.toFixed(1) || '0'}
@@ -253,7 +253,7 @@ export const DashboardPage: React.FC = () => {
             />
           </Grid>
           
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <Grid item xs={12} sm={6} md={3}>
             <MetricCard
               title="Energy Today"
               value={realtimeMetrics?.totalEnergyToday?.toFixed(1) || '0'}
@@ -263,7 +263,7 @@ export const DashboardPage: React.FC = () => {
             />
           </Grid>
           
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <Grid item xs={12} sm={6} md={3}>
             <MetricCard
               title="Online Devices"
               value={`${realtimeMetrics?.onlineDevices || 0}/${realtimeMetrics?.totalDevices || 0}`}
@@ -272,7 +272,7 @@ export const DashboardPage: React.FC = () => {
             />
           </Grid>
           
-          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+          <Grid item xs={12} sm={6} md={3}>
             <MetricCard
               title="Alerts"
               value={realtimeMetrics?.errorDevices || 0}
@@ -282,7 +282,7 @@ export const DashboardPage: React.FC = () => {
           </Grid>
 
           {/* Power Chart */}
-          <Grid size={{ xs: 12, lg: 8 }}>
+          <Grid item xs={12} lg={8}>
             {useRealTimeView && isConnected ? (
               <LivePowerMonitor
                 showAll
@@ -340,7 +340,7 @@ export const DashboardPage: React.FC = () => {
           </Grid>
 
           {/* Device Status */}
-          <Grid size={{ xs: 12, lg: 4 }}>
+          <Grid item xs={12} lg={4}>
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom>
                 Device Status
@@ -381,13 +381,13 @@ export const DashboardPage: React.FC = () => {
           </Grid>
 
           {/* Quick Stats */}
-          <Grid size={12}>
+          <Grid item xs={12}>
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom>
                 System Overview
               </Typography>
               <Grid container spacing={2}>
-                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <Grid item xs={12} sm={6} md={3}>
                   <Box textAlign="center">
                     <Typography variant="h4" color="primary">
                       {devices.length}
@@ -397,7 +397,7 @@ export const DashboardPage: React.FC = () => {
                     </Typography>
                   </Box>
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <Grid item xs={12} sm={6} md={3}>
                   <Box textAlign="center">
                     <Typography variant="h4" color="success.main">
                       {realtimeMetrics?.averageEfficiency?.toFixed(1) || '0'}%
@@ -407,7 +407,7 @@ export const DashboardPage: React.FC = () => {
                     </Typography>
                   </Box>
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <Grid item xs={12} sm={6} md={3}>
                   <Box textAlign="center">
                     <Typography variant="h4" color="info.main">
                       {((realtimeMetrics?.totalEnergyToday || 0) * 0.5).toFixed(1)}
@@ -417,7 +417,7 @@ export const DashboardPage: React.FC = () => {
                     </Typography>
                   </Box>
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <Grid item xs={12} sm={6} md={3}>
                   <Box textAlign="center">
                     <Typography variant="h4" color="warning.main">
                       ${((realtimeMetrics?.totalEnergyToday || 0) * 0.12).toFixed(2)}

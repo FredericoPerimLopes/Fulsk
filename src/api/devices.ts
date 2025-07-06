@@ -290,7 +290,7 @@ router.get('/:id/stats', authenticate, async (req: Request, res: Response) => {
       });
     }
 
-    const stats = await DeviceService.getDeviceStats(deviceId, userId, period);
+    const stats = await DeviceService.getDeviceStats(deviceId, userId, period as 'day' | 'week' | 'month' | 'year');
 
     res.json({
       message: 'Device statistics retrieved successfully',

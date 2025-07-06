@@ -46,7 +46,28 @@ export class SunSpecService {
       this.deviceConfigurations.set(deviceId, configuration);
 
       // Connect to Modbus device
-      const connected = await modbusService.connectDevice(deviceId, configuration.modbusConnection);
+      const modbusConfig = {
+        connection: {
+          ...configuration.modbusConnection,
+          retryAttempts: configuration.modbusConnection.retryCount || 3,
+          retryDelay: 1000,
+          keepAlive: true,
+          maxConnections: 1
+        },
+        sunspec: {
+          baseRegister: 40000,
+          supportedModels: [1, 101, 102, 103],
+          autoDiscovery: true,
+          maxRegistersPerRead: 125,
+          enableCaching: true,
+          cacheTimeout: 30000
+        },
+        pollingInterval: 30,
+        validateData: true,
+        logLevel: 'info' as const
+      };
+      
+      const connected = await modbusService.connectDevice(deviceId, modbusConfig);
       
       if (!connected) {
         throw new SunSpecError('Failed to connect to Modbus device', 'CONNECTION_FAILED', deviceId);
@@ -88,7 +109,7 @@ export class SunSpecService {
         2
       );
 
-      if (!identifierResult.success || !validateSunSpecIdentifier(identifierResult.rawData)) {
+      if (!identifierResult.success || !validateSunSpecIdentifier(Buffer.from(identifierResult.rawData || []))) {
         throw new SunSpecError('Invalid SunSpec identifier', 'INVALID_SUNSPEC_ID', deviceId);
       }
 

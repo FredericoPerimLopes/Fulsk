@@ -23,7 +23,9 @@
       "@services/*": ["./services/*"],
       "@models/*": ["./models/*"],
       "@middleware/*": ["./middleware/*"],
-      "@utils/*": ["./utils/*"]
+      "@utils/*": ["./utils/*"],
+      "@constants/*": ["./constants/*"],
+      "@interfaces/*": ["./interfaces/*"]
     }
   },
   "include": [

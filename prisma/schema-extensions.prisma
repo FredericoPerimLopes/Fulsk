@@ -1,0 +1,586 @@
+// Enhanced Database Schema Extensions for Solar Inverter Monitoring
+// This file contains advanced models for analytics, monitoring, and business intelligence
+
+// ==================== ANALYTICS MODELS ====================
+
+model PowerProductionSummary {
+  id                    String   @id @default(cuid())
+  deviceId              String
+  period                SummaryPeriod
+  periodStart           DateTime @db.Timestamptz
+  periodEnd             DateTime @db.Timestamptz
+  
+  // Production Metrics
+  totalEnergyProduced   Float    // kWh
+  averagePower          Float    // W
+  peakPower             Float    // W
+  minPower              Float    // W
+  
+  // Performance Metrics
+  averageEfficiency     Float?   // %
+  peakEfficiency        Float?   // %
+  capacityFactor        Float?   // %
+  performanceRatio      Float?   // %
+  
+  // Environmental Data
+  averageTemperature    Float?   // °C
+  peakTemperature       Float?   // °C
+  averageIrradiance     Float?   // W/m²
+  peakIrradiance        Float?   // W/m²
+  
+  // Availability Metrics
+  uptimeHours           Float    // Hours
+  downtimeHours         Float    // Hours
+  availabilityPercent   Float    // %
+  
+  // Data Quality
+  dataPoints            Int      // Number of data points
+  validDataPoints       Int      // Number of valid data points
+  dataQualityScore      Float    // %
+  
+  // Relationships
+  device     Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  
+  // Indexes
+  @@unique([deviceId, period, periodStart])
+  @@index([deviceId, period, periodStart])
+  @@index([periodStart, periodEnd])
+  @@index([period, totalEnergyProduced])
+  @@map("power_production_summary")
+}
+
+model DevicePerformanceMetrics {
+  id                    String   @id @default(cuid())
+  deviceId              String
+  timestamp             DateTime @default(now()) @db.Timestamptz
+  
+  // Performance Indicators
+  performanceScore      Float    // 0-100 composite score
+  efficiencyTrend       Float    // % change from baseline
+  availabilityTrend     Float    // % change from baseline
+  powerOutputTrend      Float    // % change from baseline
+  
+  // Comparative Metrics
+  peerRankPercentile    Float?   // Percentile vs similar devices
+  fleetAverage          Float?   // Average of all fleet devices
+  industryBenchmark     Float?   // Industry standard comparison
+  
+  // Predictive Indicators
+  degradationRate       Float?   // % per year
+  remainingUsefulLife   Float?   // Years
+  maintenanceScore      Float?   // 0-100 maintenance urgency
+  
+  // Environmental Impact
+  co2Offset             Float?   // kg CO2 equivalent
+  monetaryValue         Float?   // USD value of production
+  
+  // Relationships
+  device     Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  
+  @@id([deviceId, timestamp])
+  @@index([timestamp])
+  @@index([performanceScore])
+  @@index([maintenanceScore])
+  @@map("device_performance_metrics")
+}
+
+model WeatherCorrelationData {
+  id                    String   @id @default(cuid())
+  deviceId              String
+  timestamp             DateTime @default(now()) @db.Timestamptz
+  
+  // Weather Data
+  temperature           Float?   // °C
+  humidity              Float?   // %
+  windSpeed             Float?   // m/s
+  windDirection         Float?   // degrees
+  barometricPressure    Float?   // hPa
+  cloudCover            Float?   // %
+  visibility            Float?   // km
+  
+  // Solar Data
+  solarIrradiance       Float?   // W/m²
+  uvIndex               Float?   // UV index
+  sunElevation          Float?   // degrees
+  sunAzimuth            Float?   // degrees
+  
+  // Derived Metrics
+  weatherScore          Float?   // 0-100 optimal conditions score
+  expectedPower         Float?   // W predicted based on conditions
+  actualPower           Float?   // W actual measured
+  weatherEfficiency     Float?   // actual/expected ratio
+  
+  // Data Sources
+  weatherProvider       String?  // Weather data provider
+  dataQuality           Float?   // Quality score 0-100
+  
+  // Relationships
+  device     Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  
+  @@id([deviceId, timestamp])
+  @@index([timestamp])
+  @@index([weatherScore])
+  @@index([solarIrradiance])
+  @@map("weather_correlation_data")
+}
+
+model MaintenanceSchedule {
+  id                    String   @id @default(cuid())
+  deviceId              String
+  
+  // Maintenance Details
+  maintenanceType       MaintenanceType
+  priority              MaintenancePriority
+  description           String
+  
+  // Scheduling
+  scheduledDate         DateTime @db.Timestamptz
+  estimatedDuration     Int      // Minutes
+  assignedTechnician    String?
+  
+  // Predictive Maintenance
+  predictedFailureDate  DateTime? @db.Timestamptz
+  confidenceLevel       Float?   // 0-100 prediction confidence
+  triggeredBy           String?  // What triggered this maintenance
+  
+  // Completion Tracking
+  status                MaintenanceStatus @default(SCHEDULED)
+  completedDate         DateTime? @db.Timestamptz
+  actualDuration        Int?     // Minutes
+  workPerformed         String?
+  partsReplaced         String?
+  
+  // Cost Tracking
+  estimatedCost         Float?   // USD
+  actualCost            Float?   // USD
+  
+  // Relationships
+  device     Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  
+  @@index([deviceId, scheduledDate])
+  @@index([status, priority])
+  @@index([maintenanceType])
+  @@map("maintenance_schedule")
+}
+
+model EnergyForecast {
+  id                    String   @id @default(cuid())
+  deviceId              String
+  
+  // Forecast Period
+  forecastDate          DateTime @db.Timestamptz
+  forecastHorizon       ForecastHorizon
+  
+  // Predictions
+  predictedEnergy       Float    // kWh
+  predictedPeakPower    Float    // W
+  predictedAveragePower Float    // W
+  
+  // Confidence Intervals
+  confidenceLevel       Float    // % (typically 95%)
+  upperBound            Float    // kWh
+  lowerBound            Float    // kWh
+  
+  // Model Information
+  modelVersion          String
+  modelAccuracy         Float?   // % accuracy from validation
+  featuresUsed          String[] // List of features used
+  
+  // Weather Integration
+  weatherForecast       Json?    // Weather forecast data
+  
+  // Actual vs Predicted (filled after actual data available)
+  actualEnergy          Float?   // kWh
+  forecastError         Float?   // % error
+  
+  // Relationships
+  device     Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  
+  @@index([deviceId, forecastDate])
+  @@index([forecastHorizon])
+  @@index([forecastDate])
+  @@map("energy_forecast")
+}
+
+// ==================== MONITORING MODELS ====================
+
+model SystemHealthMetrics {
+  id                    String   @id @default(cuid())
+  deviceId              String
+  timestamp             DateTime @default(now()) @db.Timestamptz
+  
+  // Overall Health Score
+  healthScore           Float    // 0-100 composite health score
+  
+  // Component Health Scores
+  electricalHealth      Float    // 0-100
+  mechanicalHealth      Float    // 0-100
+  thermalHealth         Float    // 0-100
+  communicationHealth   Float    // 0-100
+  
+  // Performance Indicators
+  performanceIndex      Float    // 0-100
+  reliabilityIndex      Float    // 0-100
+  efficiencyIndex       Float    // 0-100
+  
+  // Degradation Indicators
+  degradationRate       Float    // % per year
+  expectedLifespan      Float    // Years remaining
+  
+  // Data Quality
+  dataCompleteness      Float    // % of expected data points
+  dataAccuracy          Float    // % of validated data points
+  communicationQuality  Float    // % successful communications
+  
+  // Relationships
+  device     Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  
+  @@id([deviceId, timestamp])
+  @@index([timestamp])
+  @@index([healthScore])
+  @@index([deviceId, healthScore])
+  @@map("system_health_metrics")
+}
+
+model AlertEscalation {
+  id                    String   @id @default(cuid())
+  deviceId              String
+  originalAlertId       String   // Reference to original alert
+  
+  // Escalation Details
+  escalationLevel       Int      // 1, 2, 3, etc.
+  escalationReason      String
+  escalationTime        DateTime @default(now()) @db.Timestamptz
+  
+  // Notification Details
+  notificationChannels  String[] // email, sms, push, webhook
+  notifiedUsers         String[] // User IDs
+  acknowledgmentRequired Boolean @default(false)
+  
+  // Status Tracking
+  status                EscalationStatus @default(ACTIVE)
+  acknowledgedBy        String?
+  acknowledgedAt        DateTime? @db.Timestamptz
+  resolvedAt            DateTime? @db.Timestamptz
+  
+  // Response Tracking
+  responseTime          Int?     // Minutes to acknowledge
+  resolutionTime        Int?     // Minutes to resolve
+  
+  // Relationships
+  device     Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  
+  @@index([deviceId, escalationTime])
+  @@index([status, escalationLevel])
+  @@index([escalationTime])
+  @@map("alert_escalation")
+}
+
+model DataQualityMetrics {
+  id                    String   @id @default(cuid())
+  deviceId              String
+  timestamp             DateTime @default(now()) @db.Timestamptz
+  
+  // Data Quality Scores
+  overallQuality        Float    // 0-100 composite score
+  completeness          Float    // 0-100
+  accuracy              Float    // 0-100
+  consistency           Float    // 0-100
+  timeliness            Float    // 0-100
+  
+  // Specific Metrics
+  missingDataPoints     Int      // Count of missing data points
+  invalidDataPoints     Int      // Count of invalid data points
+  duplicateDataPoints   Int      // Count of duplicate data points
+  lateDataPoints        Int      // Count of late-arriving data points
+  
+  // Time Windows
+  evaluationPeriod      Int      // Hours evaluated
+  expectedDataPoints    Int      // Expected number of data points
+  receivedDataPoints    Int      // Actual number received
+  
+  // Data Sources
+  primarySource         String   // Primary data source
+  backupSources         String[] // Backup data sources used
+  
+  // Relationships
+  device     Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  
+  @@id([deviceId, timestamp])
+  @@index([timestamp])
+  @@index([overallQuality])
+  @@index([deviceId, overallQuality])
+  @@map("data_quality_metrics")
+}
+
+model PerformanceBaselines {
+  id                    String   @id @default(cuid())
+  deviceId              String
+  
+  // Baseline Metrics
+  baselineEnergy        Float    // kWh expected daily
+  baselinePower         Float    // W expected average
+  baselineEfficiency    Float    // % expected efficiency
+  
+  // Seasonal Adjustments
+  seasonalFactors       Json     // Monthly adjustment factors
+  weatherAdjustments    Json     // Weather-based adjustments
+  
+  // Baseline Calculation
+  calculationMethod     String   // Method used for baseline
+  dataPointsUsed        Int      // Number of data points
+  calculationDate       DateTime @db.Timestamptz
+  validFrom             DateTime @db.Timestamptz
+  validTo               DateTime? @db.Timestamptz
+  
+  // Confidence Metrics
+  confidenceLevel       Float    // Statistical confidence
+  standardDeviation     Float    // Variability measure
+  
+  // Relationships
+  device     Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  
+  @@index([deviceId, validFrom])
+  @@index([validFrom, validTo])
+  @@map("performance_baselines")
+}
+
+// ==================== BUSINESS INTELLIGENCE MODELS ====================
+
+model EnergyTradingData {
+  id                    String   @id @default(cuid())
+  deviceId              String
+  timestamp             DateTime @default(now()) @db.Timestamptz
+  
+  // Grid Interaction
+  energyExported        Float    // kWh exported to grid
+  energyImported        Float    // kWh imported from grid
+  netEnergyFlow         Float    // kWh net (positive = export)
+  
+  // Pricing Data
+  sellPrice             Float    // USD per kWh
+  buyPrice              Float    // USD per kWh
+  demandCharge          Float?   // USD demand charge
+  
+  // Financial Metrics
+  revenueGenerated      Float    // USD from energy sales
+  costAvoided           Float    // USD saved by self-consumption
+  netValue              Float    // USD net value
+  
+  // Market Data
+  marketPrice           Float?   // USD per kWh market price
+  gridFrequency         Float?   // Hz
+  voltageRegulation     Float?   // V
+  
+  // Relationships
+  device     Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  
+  @@id([deviceId, timestamp])
+  @@index([timestamp])
+  @@index([netEnergyFlow])
+  @@map("energy_trading_data")
+}
+
+model CostBenefitAnalysis {
+  id                    String   @id @default(cuid())
+  deviceId              String
+  analysisDate          DateTime @default(now()) @db.Timestamptz
+  
+  // Financial Metrics
+  totalInvestment       Float    // USD initial investment
+  operatingCosts        Float    // USD annual operating costs
+  maintenanceCosts      Float    // USD annual maintenance costs
+  insuranceCosts        Float    // USD annual insurance costs
+  
+  // Benefits
+  energyRevenue         Float    // USD annual energy revenue
+  incentivePayments     Float    // USD annual incentives
+  taxBenefits           Float    // USD annual tax benefits
+  carbonCredits         Float    // USD annual carbon credits
+  
+  // ROI Calculations
+  annualNetCashFlow     Float    // USD annual net cash flow
+  cumulativeNetCashFlow Float    // USD cumulative net cash flow
+  simplePaybackYears    Float    // Years to payback
+  netPresentValue       Float    // USD NPV
+  internalRateOfReturn  Float    // % IRR
+  
+  // Performance Period
+  analysisYears         Int      // Years of analysis
+  discountRate          Float    // % discount rate used
+  
+  // Relationships
+  device     Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  
+  @@index([deviceId, analysisDate])
+  @@index([analysisDate])
+  @@map("cost_benefit_analysis")
+}
+
+model SustainabilityMetrics {
+  id                    String   @id @default(cuid())
+  deviceId              String
+  timestamp             DateTime @default(now()) @db.Timestamptz
+  
+  // Environmental Impact
+  co2Avoided            Float    // kg CO2 equivalent avoided
+  co2Intensity          Float    // kg CO2/kWh
+  renewablePercentage   Float    // % renewable energy
+  
+  // Resource Conservation
+  waterSaved            Float?   // Liters water saved
+  fuelSaved             Float?   // Liters fuel equivalent saved
+  
+  // Lifecycle Analysis
+  embodiedCarbon        Float?   // kg CO2 in manufacturing
+  operationalCarbon     Float    // kg CO2 in operation
+  endOfLifeCarbon       Float?   // kg CO2 in disposal
+  
+  // Certifications
+  certificationLevel    String?  // Green certification level
+  certificationDate     DateTime? @db.Timestamptz
+  
+  // Relationships
+  device     Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  
+  @@id([deviceId, timestamp])
+  @@index([timestamp])
+  @@index([co2Avoided])
+  @@map("sustainability_metrics")
+}
+
+model ComplianceReporting {
+  id                    String   @id @default(cuid())
+  deviceId              String
+  reportingPeriod       DateTime @db.Timestamptz
+  
+  // Compliance Standards
+  standard              ComplianceStandard
+  requirement           String
+  status                ComplianceStatus
+  
+  // Reporting Data
+  reportedValue         Float?   // Numeric value reported
+  reportedText          String?  // Text value reported
+  evidenceDocuments     String[] // Document references
+  
+  // Verification
+  verifiedBy            String?  // Verifying party
+  verificationDate      DateTime? @db.Timestamptz
+  verificationNotes     String?
+  
+  // Audit Trail
+  submittedBy           String
+  submittedDate         DateTime @default(now()) @db.Timestamptz
+  
+  // Relationships
+  device     Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  
+  @@index([deviceId, reportingPeriod])
+  @@index([standard, status])
+  @@map("compliance_reporting")
+}
+
+// ==================== ENUMS ====================
+
+enum SummaryPeriod {
+  HOURLY
+  DAILY
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+enum MaintenanceType {
+  PREVENTIVE
+  CORRECTIVE
+  PREDICTIVE
+  EMERGENCY
+  INSPECTION
+  CLEANING
+  CALIBRATION
+  UPGRADE
+}
+
+enum MaintenancePriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+  EMERGENCY
+}
+
+enum MaintenanceStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  DEFERRED
+}
+
+enum ForecastHorizon {
+  HOUR
+  DAY
+  WEEK
+  MONTH
+  QUARTER
+  YEAR
+}
+
+enum EscalationStatus {
+  ACTIVE
+  ACKNOWLEDGED
+  RESOLVED
+  CANCELLED
+}
+
+enum ComplianceStandard {
+  IEC_61724
+  IEEE_1547
+  UL_1741
+  CSA_C22_2
+  AS_NZS_4777
+  EN_50438
+  CUSTOM
+}
+
+enum ComplianceStatus {
+  COMPLIANT
+  NON_COMPLIANT
+  PENDING
+  EXEMPT
+  NOT_APPLICABLE
+}
+
+// ==================== RELATIONSHIP UPDATES ====================
+
+// Add relationships to existing Device model
+// These would be added to the main schema.prisma file
+
+// Device model relationships (to be added):
+// powerProductionSummary PowerProductionSummary[]
+// performanceMetrics DevicePerformanceMetrics[]
+// weatherCorrelation WeatherCorrelationData[]
+// maintenanceSchedule MaintenanceSchedule[]
+// energyForecast EnergyForecast[]
+// healthMetrics SystemHealthMetrics[]
+// alertEscalation AlertEscalation[]
+// dataQualityMetrics DataQualityMetrics[]
+// performanceBaselines PerformanceBaselines[]
+// energyTradingData EnergyTradingData[]
+// costBenefitAnalysis CostBenefitAnalysis[]
+// sustainabilityMetrics SustainabilityMetrics[]
+// complianceReporting ComplianceReporting[]

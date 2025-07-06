@@ -1,0 +1,180 @@
+global:
+  smtp_smarthost: 'localhost:587'
+  smtp_from: 'alertmanager@fulsk.local'
+  smtp_auth_username: 'alertmanager@fulsk.local'
+  smtp_auth_password: 'your-smtp-password'
+  smtp_require_tls: true
+  
+  slack_api_url: 'YOUR_SLACK_WEBHOOK_URL'
+  
+  # Resolve timeout
+  resolve_timeout: 5m
+
+# Inhibit rules allow to mute a set of alerts given that another alert is firing
+inhibit_rules:
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'instance']
+
+# Route tree for notifications
+route:
+  group_by: ['alertname', 'cluster', 'service']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 1h
+  receiver: 'default-receiver'
+  routes:
+    - match:
+        severity: critical
+      receiver: 'critical-receiver'
+      group_wait: 10s
+      repeat_interval: 5m
+      
+    - match:
+        severity: warning
+      receiver: 'warning-receiver'
+      group_wait: 30s
+      repeat_interval: 15m
+      
+    - match:
+        alertname: InverterOffline
+      receiver: 'solar-critical-receiver'
+      group_wait: 5s
+      repeat_interval: 2m
+      
+    - match:
+        alertname: DatabaseDown
+      receiver: 'database-critical-receiver'
+      group_wait: 5s
+      repeat_interval: 1m
+
+# Notification receivers
+receivers:
+  - name: 'default-receiver'
+    email_configs:
+      - to: 'devops@fulsk.local'
+        subject: 'Fulsk Alert: {{ .GroupLabels.alertname }}'
+        body: |
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Instance: {{ .Labels.instance }}
+          Severity: {{ .Labels.severity }}
+          {{ end }}
+
+  - name: 'critical-receiver'
+    email_configs:
+      - to: 'devops@fulsk.local,oncall@fulsk.local'
+        subject: 'CRITICAL: Fulsk Alert - {{ .GroupLabels.alertname }}'
+        body: |
+          🚨 CRITICAL ALERT 🚨
+          
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Instance: {{ .Labels.instance }}
+          Time: {{ .StartsAt }}
+          {{ end }}
+          
+          Please investigate immediately!
+    
+    slack_configs:
+      - channel: '#alerts-critical'
+        title: 'CRITICAL: Fulsk Alert'
+        text: |
+          🚨 CRITICAL ALERT 🚨
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Instance:* {{ .Labels.instance }}
+          *Severity:* {{ .Labels.severity }}
+          {{ end }}
+        send_resolved: true
+
+  - name: 'warning-receiver'
+    email_configs:
+      - to: 'devops@fulsk.local'
+        subject: 'WARNING: Fulsk Alert - {{ .GroupLabels.alertname }}'
+        body: |
+          ⚠️ WARNING ALERT ⚠️
+          
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Instance: {{ .Labels.instance }}
+          Time: {{ .StartsAt }}
+          {{ end }}
+    
+    slack_configs:
+      - channel: '#alerts-warning'
+        title: 'WARNING: Fulsk Alert'
+        text: |
+          ⚠️ WARNING ALERT ⚠️
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Instance:* {{ .Labels.instance }}
+          {{ end }}
+        send_resolved: true
+
+  - name: 'solar-critical-receiver'
+    email_configs:
+      - to: 'solar-team@fulsk.local,devops@fulsk.local'
+        subject: 'SOLAR SYSTEM CRITICAL: {{ .GroupLabels.alertname }}'
+        body: |
+          🌞 SOLAR SYSTEM CRITICAL ALERT 🌞
+          
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Inverter: {{ .Labels.inverter_id }}
+          Time: {{ .StartsAt }}
+          {{ end }}
+          
+          Solar system requires immediate attention!
+    
+    slack_configs:
+      - channel: '#solar-alerts'
+        title: 'SOLAR SYSTEM CRITICAL'
+        text: |
+          🌞 SOLAR SYSTEM CRITICAL 🌞
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Inverter:* {{ .Labels.inverter_id }}
+          {{ end }}
+        send_resolved: true
+
+  - name: 'database-critical-receiver'
+    email_configs:
+      - to: 'dba@fulsk.local,devops@fulsk.local'
+        subject: 'DATABASE CRITICAL: {{ .GroupLabels.alertname }}'
+        body: |
+          🗄️ DATABASE CRITICAL ALERT 🗄️
+          
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Instance: {{ .Labels.instance }}
+          Time: {{ .StartsAt }}
+          {{ end }}
+          
+          Database requires immediate attention!
+    
+    slack_configs:
+      - channel: '#database-alerts'
+        title: 'DATABASE CRITICAL'
+        text: |
+          🗄️ DATABASE CRITICAL 🗄️
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Instance:* {{ .Labels.instance }}
+          {{ end }}
+        send_resolved: true
+
+# Silence configuration
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'

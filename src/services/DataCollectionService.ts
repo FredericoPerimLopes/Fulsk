@@ -4,15 +4,25 @@ import cron from 'node-cron';
 import { DeviceData, DeviceStatus, DeviceType } from '@models/Device';
 import { DatabaseDeviceService as DeviceService } from '@services/DatabaseDeviceService';
 import { InverterService, InverterData } from '@services/InverterService';
-import { ModbusService } from '@services/ModbusService';
+import { ModbusService, modbusService } from '@services/ModbusService';
+import { sunspecService } from '@services/SunSpecService';
 import { ModbusDeviceConfig, ModbusConnectionStatus } from '@interfaces/ModbusConfig';
 import { CommunicationProtocol } from '@prisma/client';
+
+// Type definitions for missing types
+interface SunSpecDeviceData {
+  deviceId: string;
+  timestamp: Date;
+  inverter?: any;
+  meter?: any;
+}
 
 export class DataCollectionService {
   private ioServer: Server;
   private mqttClient?: mqtt.MqttClient;
   private dataGeneratorIntervals: Map<string, NodeJS.Timeout> = new Map();
   private modbusPollingIntervals: Map<string, NodeJS.Timeout> = new Map();
+  private sunspecDevices: Map<string, any> = new Map();
 
   constructor(ioServer: Server) {
     this.ioServer = ioServer;
@@ -414,7 +424,7 @@ export class DataCollectionService {
       } catch (error) {
         console.error(`❌ Error polling Modbus data for device ${deviceId}:`, error);
       }
-    }, config.pollingInterval * 1000);
+    }, pollingInterval);
 
     this.dataGeneratorIntervals.set(deviceId, interval);
   }

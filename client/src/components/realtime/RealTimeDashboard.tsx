@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
-  GridLegacy as Grid,
+  Grid,
   Card,
   CardContent,
   Typography,
@@ -306,7 +306,7 @@ export const RealTimeDashboard: React.FC<RealTimeDashboardProps> = ({
 
       {/* Main Metrics */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid size={{ xs: 6, md: 3 }}>
+        <Grid item xs={6} md={3}>
           <MetricCard
             title="Total Power"
             value={formatPower(systemMetrics.totalPower)}
@@ -316,7 +316,7 @@ export const RealTimeDashboard: React.FC<RealTimeDashboardProps> = ({
           />
         </Grid>
         
-        <Grid size={{ xs: 6, md: 3 }}>
+        <Grid item xs={6} md={3}>
           <MetricCard
             title="Energy Today"
             value={systemMetrics.totalEnergyToday.toFixed(1)}
@@ -326,7 +326,7 @@ export const RealTimeDashboard: React.FC<RealTimeDashboardProps> = ({
           />
         </Grid>
         
-        <Grid size={{ xs: 6, md: 3 }}>
+        <Grid item xs={6} md={3}>
           <MetricCard
             title="System Efficiency"
             value={systemMetrics.averageEfficiency.toFixed(1)}
@@ -336,7 +336,7 @@ export const RealTimeDashboard: React.FC<RealTimeDashboardProps> = ({
           />
         </Grid>
         
-        <Grid size={{ xs: 6, md: 3 }}>
+        <Grid item xs={6} md={3}>
           <MetricCard
             title="Avg Temperature"
             value={systemMetrics.averageTemperature.toFixed(1)}
@@ -349,7 +349,7 @@ export const RealTimeDashboard: React.FC<RealTimeDashboardProps> = ({
 
       <Grid container spacing={2}>
         {/* Live Power Chart */}
-        <Grid size={{ xs: 12, lg: 8 }}>
+        <Grid item xs={12} lg={8}>
           <LivePowerMonitor
             showAll
             compact={compactView}
@@ -358,7 +358,7 @@ export const RealTimeDashboard: React.FC<RealTimeDashboardProps> = ({
         </Grid>
 
         {/* System Performance Chart */}
-        <Grid size={{ xs: 12, lg: 4 }}>
+        <Grid item xs={12} lg={4}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -367,7 +367,7 @@ export const RealTimeDashboard: React.FC<RealTimeDashboardProps> = ({
               
               <Box sx={{ height: compactView ? 200 : 300 }}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={chartData}>
+                  <LineChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis 
                       dataKey="time" 
@@ -393,14 +393,13 @@ export const RealTimeDashboard: React.FC<RealTimeDashboardProps> = ({
                         return [value, name];
                       }}
                     />
-                    <Area
+                    <Line
                       yAxisId="efficiency"
                       type="monotone"
                       dataKey="efficiency"
                       stroke={theme.palette.success.main}
-                      fill={theme.palette.success.light}
-                      fillOpacity={0.3}
                       strokeWidth={2}
+                      dot={false}
                     />
                     <Line
                       yAxisId="devices"
@@ -410,7 +409,7 @@ export const RealTimeDashboard: React.FC<RealTimeDashboardProps> = ({
                       strokeWidth={2}
                       dot={false}
                     />
-                  </AreaChart>
+                  </LineChart>
                 </ResponsiveContainer>
               </Box>
             </CardContent>
@@ -418,7 +417,7 @@ export const RealTimeDashboard: React.FC<RealTimeDashboardProps> = ({
         </Grid>
 
         {/* Device Status Summary */}
-        <Grid size={12}>
+        <Grid item xs={12}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -431,7 +430,7 @@ export const RealTimeDashboard: React.FC<RealTimeDashboardProps> = ({
                   const deviceAlerts = alerts.filter(a => a.deviceId === device.id && !a.acknowledged);
                   
                   return (
-                    <Grid size={{ xs: 12, sm: 6, md: compactView ? 6 : 3 }} key={device.id}>
+                    <Grid item xs={12} sm={6} md={compactView ? 6 : 3} key={device.id}>
                       <Paper sx={{ p: 2 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                           <Box

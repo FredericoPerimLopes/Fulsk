@@ -85,7 +85,28 @@ router.post('/discover', authenticate, authorize(UserRole.ADMIN, UserRole.INSTAL
     };
 
     // Connect and discover
-    const connected = await modbusService.connectDevice(deviceId, connectionInfo);
+    const modbusConfig = {
+      connection: {
+        ...connectionInfo,
+        retryAttempts: 3,
+        retryDelay: 1000,
+        keepAlive: true,
+        maxConnections: 1
+      },
+      sunspec: {
+        baseRegister: 40000,
+        supportedModels: [1, 101, 102, 103],
+        autoDiscovery: true,
+        maxRegistersPerRead: 125,
+        enableCaching: true,
+        cacheTimeout: 30000
+      },
+      pollingInterval: 0,
+      validateData: true,
+      logLevel: 'info' as const
+    };
+    
+    const connected = await modbusService.connectDevice(deviceId, modbusConfig);
     if (!connected) {
       return res.status(400).json({
         error: 'Connection Failed',
@@ -404,12 +425,12 @@ router.get('/devices', authenticate, async (req: Request, res: Response) => {
     // Get all connection states from ModbusService
     const connectionStates = modbusService.getAllConnectionStates();
     
-    const devices = connectionStates.map(state => ({
+    const devices = connectionStates.map((state: any) => ({
       deviceId: state.deviceId,
       configuration: sunspecService.getDeviceConfiguration(state.deviceId),
       connectionState: state,
       discoveredModels: sunspecService.getDiscoveredModels(state.deviceId)
-    })).filter(device => device.configuration); // Only return configured devices
+    })).filter((device: any) => device.configuration); // Only return configured devices
 
     // Filter devices based on user role and ownership
     // Note: In a full implementation, you'd check device ownership from the database
@@ -449,7 +470,7 @@ router.get('/health', authenticate, async (req: Request, res: Response) => {
         healthyConnections: Object.values(healthStatus).filter(healthy => healthy).length,
         unhealthyConnections: Object.values(healthStatus).filter(healthy => !healthy).length
       },
-      devices: connectionStates.map(state => ({
+      devices: connectionStates.map((state: any) => ({
         deviceId: state.deviceId,
         connected: state.connected,
         healthy: healthStatus[state.deviceId] || false,

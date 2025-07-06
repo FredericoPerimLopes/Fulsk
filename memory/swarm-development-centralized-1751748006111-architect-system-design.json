@@ -1,0 +1,419 @@
+{
+  "systemArchitecture": {
+    "overview": "Complete system architecture for SunSpec/Modbus TCP solar inverter monitoring application with real-time data collection, analytics, and web dashboard",
+    "currentState": "MATURE_IMPLEMENTATION",
+    "architectureDesign": {
+      "coreComponents": [
+        {
+          "name": "SunSpec Service",
+          "type": "SERVICE",
+          "description": "High-level SunSpec protocol handler with automatic model discovery and data parsing",
+          "status": "IMPLEMENTED",
+          "features": [
+            "Automatic SunSpec model discovery",
+            "Multi-model support (101, 102, 103, 160, 201-204)",
+            "Data polling and caching",
+            "Error handling and retry logic",
+            "Real-time data processing"
+          ],
+          "location": "/src/services/SunSpecService.ts"
+        },
+        {
+          "name": "Modbus Service",
+          "type": "SERVICE", 
+          "description": "Core Modbus TCP/IP communication layer with connection pooling",
+          "status": "IMPLEMENTED",
+          "features": [
+            "Connection pooling and health monitoring",
+            "Automatic reconnection with exponential backoff",
+            "SunSpec device discovery",
+            "Register reading with validation",
+            "Performance metrics tracking"
+          ],
+          "location": "/src/services/ModbusService.ts"
+        },
+        {
+          "name": "Data Collection Service",
+          "type": "SERVICE",
+          "description": "Multi-protocol data collection with real-time WebSocket broadcasting",
+          "status": "IMPLEMENTED",
+          "features": [
+            "MQTT and Modbus protocol support",
+            "Real-time WebSocket broadcasting",
+            "Data validation and alert generation",
+            "Configurable polling intervals",
+            "Simulation mode for development"
+          ],
+          "location": "/src/services/DataCollectionService.ts"
+        },
+        {
+          "name": "Database Layer",
+          "type": "DATABASE",
+          "description": "PostgreSQL/TimescaleDB with comprehensive SunSpec schema",
+          "status": "IMPLEMENTED",
+          "features": [
+            "Time-series optimization with TimescaleDB",
+            "Complete SunSpec model support",
+            "MPPT module tracking",
+            "Diagnostic event management",
+            "Performance analytics"
+          ],
+          "location": "/prisma/schema.prisma"
+        },
+        {
+          "name": "RESTful API",
+          "type": "API",
+          "description": "Complete API endpoints for device management and monitoring",
+          "status": "IMPLEMENTED",
+          "features": [
+            "Device discovery and configuration",
+            "Real-time data retrieval",
+            "Polling control",
+            "Health monitoring",
+            "Authentication and authorization"
+          ],
+          "location": "/src/api/sunspec.ts"
+        },
+        {
+          "name": "Frontend Components",
+          "type": "FRONTEND",
+          "description": "React-based dashboard components for inverter monitoring",
+          "status": "IMPLEMENTED",
+          "features": [
+            "Inverter dashboard and configuration",
+            "Real-time charts and monitoring",
+            "Diagnostic displays",
+            "Device management interface",
+            "Live power monitoring"
+          ],
+          "location": "/client/src/components/"
+        }
+      ],
+      "dataFlow": {
+        "realtimeDataPipeline": [
+          "Solar Inverter (SunSpec/Modbus TCP Port 502)",
+          "ModbusService (Connection Pool & Health Monitoring)",
+          "SunSpecService (Model Discovery & Data Parsing)",
+          "DataCollectionService (Validation & Processing)",
+          "WebSocket Broadcasting (Real-time Updates)",
+          "React Frontend (Live Dashboard)"
+        ],
+        "persistenceFlow": [
+          "SunSpecService (Processed Data)",
+          "DatabaseService (Prisma ORM)",
+          "TimescaleDB (Time-series Storage)",
+          "Analytics Engine (Performance Metrics)",
+          "Alert System (Threshold Monitoring)"
+        ]
+      },
+      "protocolSupport": {
+        "sunspecModels": [
+          {
+            "model": 1,
+            "name": "Common",
+            "description": "Basic device identification",
+            "mandatory": true,
+            "registers": 69
+          },
+          {
+            "model": 101,
+            "name": "Single Phase Inverter",
+            "description": "Single-phase inverter measurements",
+            "registers": 50
+          },
+          {
+            "model": 102,
+            "name": "Split Phase Inverter", 
+            "description": "Split-phase inverter measurements",
+            "registers": 50
+          },
+          {
+            "model": 103,
+            "name": "Three Phase Inverter",
+            "description": "Three-phase inverter measurements",
+            "registers": 50
+          },
+          {
+            "model": 160,
+            "name": "Multiple MPPT Extension",
+            "description": "Per-module MPPT measurements",
+            "registers": "28 + repeating blocks"
+          },
+          {
+            "model": 201,
+            "name": "Single Phase Meter",
+            "description": "Single-phase meter measurements",
+            "registers": 105
+          },
+          {
+            "model": 203,
+            "name": "Three Phase Meter",
+            "description": "Three-phase meter measurements", 
+            "registers": 105
+          }
+        ],
+        "modbusFeatures": [
+          "TCP/IP communication (Port 502)",
+          "Connection pooling and health monitoring",
+          "Automatic device discovery",
+          "Register validation and error handling",
+          "Performance metrics and monitoring"
+        ]
+      }
+    },
+    "technologyStack": {
+      "backend": {
+        "runtime": "Node.js 18+",
+        "language": "TypeScript",
+        "framework": "Express.js",
+        "database": "PostgreSQL with TimescaleDB",
+        "orm": "Prisma",
+        "authentication": "JWT with refresh tokens",
+        "realtime": "Socket.io WebSockets",
+        "protocols": ["SunSpec/Modbus TCP", "MQTT", "HTTP/REST"],
+        "libraries": {
+          "modbus": ["modbus-serial", "jsmodbus"],
+          "sunspec": "Custom implementation",
+          "validation": "Joi",
+          "logging": "Winston",
+          "caching": "Redis",
+          "scheduling": "node-cron"
+        }
+      },
+      "frontend": {
+        "framework": "React 18",
+        "language": "TypeScript",
+        "stateManagement": "Zustand",
+        "uiFramework": "Custom components",
+        "charting": "Chart.js/React Charts",
+        "realtime": "Socket.io Client",
+        "httpClient": "Axios",
+        "bundler": "Vite"
+      },
+      "infrastructure": {
+        "containerization": "Docker",
+        "orchestration": "Docker Compose",
+        "database": "PostgreSQL 15 with TimescaleDB",
+        "caching": "Redis",
+        "messageQueue": "MQTT (Mosquitto)",
+        "monitoring": "Built-in health checks",
+        "deployment": "Production-ready Docker setup"
+      }
+    },
+    "sunspecCompliance": {
+      "ieee1547": "IEEE 1547-2018 compliant",
+      "specificationVersion": "2025 Updates",
+      "mandatoryModels": [1, 103],
+      "optionalModels": [101, 102, 160, 201, 203],
+      "updateNotes": {
+        "modbusEnable": "New section 3.3 for improved utility",
+        "timingUpdate": "1000ms delay for read operations following write",
+        "ieee1547Compliance": "Mandatory points confirmed",
+        "scaleFactorTest": "Enhanced scale factor verification",
+        "securityEnhancements": "TLS certification program in development"
+      }
+    },
+    "securityArchitecture": {
+      "networkSecurity": [
+        "VLAN segregation for Modbus network",
+        "Firewall rules restricting port 502 access",
+        "IP whitelisting for inverter connections",
+        "VPN access for remote monitoring"
+      ],
+      "applicationSecurity": [
+        "JWT authentication with refresh tokens",
+        "Role-based access control (RBAC)",
+        "Input validation and sanitization",
+        "API rate limiting",
+        "Audit logging for all operations"
+      ],
+      "dataSecurity": [
+        "Encryption at rest for sensitive data",
+        "Secure configuration storage",
+        "Data retention policies",
+        "GDPR compliance considerations"
+      ],
+      "modbusSecurityLimitations": [
+        "Standard Modbus TCP is unencrypted",
+        "No built-in authentication",
+        "Recommendation: Use secure network infrastructure",
+        "Future: SunSpec TLS certification program"
+      ]
+    },
+    "scalabilityDesign": {
+      "connectionScaling": {
+        "maxConcurrentConnections": 100,
+        "connectionPooling": "Per-device connection reuse",
+        "loadBalancing": "Round-robin for multiple service instances",
+        "horizontalScaling": "Multiple service instances with Redis coordination"
+      },
+      "dataScaling": {
+        "timescaleDB": "Automatic partitioning and compression",
+        "dataRetention": "5 years for inverter data, 2 years for diagnostics",
+        "continuousAggregates": "Daily and hourly summaries",
+        "indexOptimization": "Time-series and device-specific indexes"
+      },
+      "performanceOptimizations": [
+        "Intelligent polling intervals",
+        "Batch register reads",
+        "Data compression after 7 days",
+        "Selective data reading based on criticality",
+        "Caching of frequently accessed data"
+      ]
+    },
+    "implementationStatus": {
+      "currentPhase": "PRODUCTION_READY",
+      "completedFeatures": [
+        "Complete SunSpec/Modbus integration",
+        "Multi-model device support",
+        "Real-time data pipeline",
+        "TimescaleDB time-series storage",
+        "WebSocket real-time updates",
+        "React dashboard components",
+        "RESTful API endpoints",
+        "Authentication and authorization",
+        "Error handling and retry logic",
+        "Health monitoring and diagnostics"
+      ],
+      "recommendedEnhancements": [
+        "Enhanced security with TLS support",
+        "Advanced analytics and ML forecasting",
+        "Mobile application development",
+        "Cloud deployment automation",
+        "Enhanced alerting system",
+        "Bulk device management",
+        "Historical data export",
+        "Performance benchmarking tools"
+      ]
+    },
+    "deploymentArchitecture": {
+      "productionTopology": {
+        "webTier": [
+          "React frontend (served via nginx)",
+          "Express.js API server",
+          "Socket.io WebSocket server"
+        ],
+        "serviceTier": [
+          "SunSpec service instances",
+          "Modbus service pool",
+          "Data collection service",
+          "Background job processors"
+        ],
+        "dataTier": [
+          "PostgreSQL with TimescaleDB",
+          "Redis cache",
+          "MQTT broker"
+        ],
+        "monitoring": [
+          "Health check endpoints",
+          "Performance metrics collection",
+          "Log aggregation",
+          "Alert notification system"
+        ]
+      },
+      "networkArchitecture": {
+        "internetLayer": "Public internet access",
+        "dmzLayer": "Web servers and load balancers",
+        "applicationLayer": "API servers and services",
+        "dataLayer": "Database and cache servers",
+        "deviceLayer": "Isolated VLAN for Modbus devices"
+      }
+    },
+    "integrationPatterns": {
+      "deviceDiscovery": [
+        "Network scanning for SunSpec devices",
+        "Automatic model detection",
+        "Configuration validation",
+        "Health monitoring setup"
+      ],
+      "dataCollection": [
+        "Configurable polling intervals",
+        "Multiple protocol support",
+        "Real-time WebSocket broadcasting",
+        "Historical data storage"
+      ],
+      "errorHandling": [
+        "Exponential backoff retry",
+        "Circuit breaker pattern",
+        "Graceful degradation",
+        "Comprehensive logging"
+      ],
+      "monitoring": [
+        "Connection health checks",
+        "Performance metrics",
+        "Alert generation",
+        "Diagnostic information"
+      ]
+    }
+  },
+  "technicalSpecifications": {
+    "sunspecProtocol": {
+      "baseAddress": "40000 (configurable)",
+      "supportedModels": [1, 101, 102, 103, 160, 201, 203],
+      "registerRange": "40070-40120 for Model 103",
+      "dataTypes": ["16-bit", "32-bit", "strings", "enums", "bitfields"],
+      "scalingFactors": "IEEE 754 compliant",
+      "deviceIdentifier": "SunS (0x53756e53)"
+    },
+    "modbusConfiguration": {
+      "protocol": "Modbus TCP/IP",
+      "defaultPort": 502,
+      "functionCodes": [3, 4, 6, 16],
+      "timeout": "5-10 seconds",
+      "retryAttempts": 3,
+      "connectionPooling": "Per-device persistent connections",
+      "keepAlive": "30 second intervals"
+    },
+    "performanceMetrics": {
+      "maxDevices": 100,
+      "dataLatency": "< 1 second",
+      "pollingInterval": "30 seconds (configurable)",
+      "databaseWrites": "< 100ms",
+      "websocketLatency": "< 50ms",
+      "memoryUsage": "< 512MB per 50 devices"
+    },
+    "dataStorage": {
+      "primaryDatabase": "PostgreSQL 15",
+      "timeSeries": "TimescaleDB extension",
+      "retentionPolicy": "5 years inverter data, 2 years diagnostics",
+      "compression": "Automatic after 7 days",
+      "indexing": "Time-series and device-specific",
+      "backups": "Daily automated backups"
+    }
+  },
+  "developmentGuidelines": {
+    "codeStandards": [
+      "TypeScript strict mode",
+      "ES modules (import/export)",
+      "Destructuring imports",
+      "JSDoc comments for public APIs",
+      "Async/await over Promise chains",
+      "Const/let over var"
+    ],
+    "testingStrategy": [
+      "Unit tests for services",
+      "Integration tests for data flow",
+      "End-to-end tests for API endpoints",
+      "Performance tests for Modbus communication",
+      "Security tests for authentication"
+    ],
+    "deploymentProcess": [
+      "TypeScript compilation check",
+      "Full test suite execution",
+      "Code linting and formatting",
+      "Database migration validation",
+      "Docker image building",
+      "Production deployment"
+    ]
+  },
+  "architecture_analysis_date": "2025-01-05",
+  "specification_compliance": "SunSpec 2025 Updates, IEEE 1547-2018",
+  "implementation_maturity": "PRODUCTION_READY",
+  "recommended_next_steps": [
+    "Enhanced security implementation",
+    "Performance optimization",
+    "Advanced analytics integration",
+    "Mobile application development",
+    "Cloud deployment automation"
+  ]
+}

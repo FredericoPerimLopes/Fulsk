@@ -1,0 +1,1 @@
+export { AlertManagement } from './AlertManagement';

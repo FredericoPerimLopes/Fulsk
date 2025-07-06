@@ -96,9 +96,10 @@ export class ModbusService extends EventEmitter {
    * Setup client event handlers
    */
   private setupEventHandlers(): void {
-    this.client.on('error', (error) => {
+    this.client.on('error', (error: unknown) => {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       this.logger.error('Modbus client error:', error);
-      this.updateConnectionStatus(ModbusConnectionState.ERROR, error.message);
+      this.updateConnectionStatus(ModbusConnectionState.ERROR, errorMessage);
       this.emit('error', error);
     });
 
@@ -366,7 +367,7 @@ export class ModbusService extends EventEmitter {
           break;
         }
         
-        if (Object.values(SUNSPEC_INVERTER_MODELS).includes(modelId)) {
+        if (Object.values(SUNSPEC_INVERTER_MODELS).includes(modelId as any)) {
           supportedModels.push(modelId);
           this.logger.debug(`Found inverter model: ${modelId}, length: ${modelLength}`);
         }
@@ -405,7 +406,7 @@ export class ModbusService extends EventEmitter {
       
       // Read inverter models
       for (const modelId of this.config.sunspec.supportedModels) {
-        if (Object.values(SUNSPEC_INVERTER_MODELS).includes(modelId)) {
+        if (Object.values(SUNSPEC_INVERTER_MODELS).includes(modelId as any)) {
           const inverterData = await this.readInverterModel(modelId);
           rawValues.push(...inverterData.rawValues);
           Object.assign(parsedData, inverterData.parsedData);
@@ -653,3 +654,83 @@ export class ModbusService extends EventEmitter {
     this.removeAllListeners();
   }
 }
+
+// ModbusServiceManager to handle multiple device connections
+export class ModbusServiceManager {
+  private static instances: Map<string, ModbusService> = new Map();
+  
+  static async connectDevice(deviceId: string, config: Partial<ModbusDeviceConfig>): Promise<boolean> {
+    try {
+      const service = new ModbusService(config);
+      await service.connect();
+      this.instances.set(deviceId, service);
+      return true;
+    } catch (error) {
+      console.error(`Failed to connect device ${deviceId}:`, error);
+      return false;
+    }
+  }
+  
+  static async disconnectDevice(deviceId: string): Promise<void> {
+    const service = this.instances.get(deviceId);
+    if (service) {
+      await service.disconnect();
+      this.instances.delete(deviceId);
+    }
+  }
+  
+  static getConnectionState(deviceId: string): ModbusConnectionStatus | null {
+    const service = this.instances.get(deviceId);
+    return service ? service.getConnectionStatus() : null;
+  }
+  
+  static getAllConnectionStates(): Array<{deviceId: string, connected: boolean, lastConnected?: Date, lastError?: string, errorCount: number}> {
+    return Array.from(this.instances.entries()).map(([deviceId, service]) => {
+      const status = service.getConnectionStatus();
+      return {
+        deviceId,
+        connected: status.state === 'CONNECTED',
+        lastConnected: status.lastConnected,
+        lastError: status.lastError,
+        errorCount: status.failedReads
+      };
+    });
+  }
+  
+  static async healthCheck(): Promise<{ [deviceId: string]: boolean }> {
+    const result: { [deviceId: string]: boolean } = {};
+    for (const [deviceId, service] of this.instances) {
+      const status = service.getConnectionStatus();
+      result[deviceId] = status.state === 'CONNECTED';
+    }
+    return result;
+  }
+  
+  static async readHoldingRegisters(
+    deviceId: string,
+    address: number,
+    count: number,
+    modelType?: any
+  ): Promise<{success: boolean, registers: number[], rawData?: number[]}> {
+    const service = this.instances.get(deviceId);
+    if (!service) {
+      return { success: false, registers: [], rawData: [] };
+    }
+    try {
+      const data = await (service as any).readHoldingRegisters(address, count);
+      return { success: true, registers: data, rawData: data };
+    } catch (error) {
+      return { success: false, registers: [], rawData: [] };
+    }
+  }
+  
+  static async cleanup(): Promise<void> {
+    for (const [deviceId, service] of this.instances) {
+      await service.cleanup();
+    }
+    this.instances.clear();
+  }
+}
+
+// Export singleton manager
+export const modbusService = ModbusServiceManager;

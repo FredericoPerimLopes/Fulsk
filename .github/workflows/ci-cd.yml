@@ -187,11 +187,50 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Setup SSH
+      uses: webfactory/ssh-agent@v0.7.0
+      with:
+        ssh-private-key: ${{ secrets.STAGING_SSH_KEY }}
+
     - name: Deploy to staging
       run: |
         echo "Deploying to staging environment..."
-        # Add your staging deployment logic here
-        # This could involve SSH into staging server and running deployment script
+        
+        # SSH into staging server and deploy
+        ssh -o StrictHostKeyChecking=no ${{ secrets.STAGING_USER }}@${{ secrets.STAGING_HOST }} << 'EOF'
+          cd /opt/fulsk
+          
+          # Pull latest code
+          git pull origin develop
+          
+          # Create backup before deployment
+          ./scripts/backup.sh
+          
+          # Pull latest images
+          docker-compose -f docker-compose.prod.yml pull
+          
+          # Deploy with rolling update
+          docker-compose -f docker-compose.prod.yml up -d --force-recreate
+          
+          # Run health checks
+          for i in {1..30}; do
+            if curl -f http://localhost/health; then
+              echo "Staging deployment successful"
+              break
+            fi
+            echo "Waiting for service to start..."
+            sleep 10
+          done
+          
+          # Start monitoring
+          docker-compose -f docker-compose.monitoring.yml up -d
+        EOF
+
+    - name: Run staging tests
+      run: |
+        # Run smoke tests against staging
+        curl -f http://${{ secrets.STAGING_HOST }}/health
+        curl -f http://${{ secrets.STAGING_HOST }}/api/health
 
   deploy-production:
     name: Deploy to Production
@@ -204,15 +243,73 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Setup SSH
+      uses: webfactory/ssh-agent@v0.7.0
+      with:
+        ssh-private-key: ${{ secrets.PRODUCTION_SSH_KEY }}
+
+    - name: Pre-deployment backup
+      run: |
+        ssh -o StrictHostKeyChecking=no ${{ secrets.PRODUCTION_USER }}@${{ secrets.PRODUCTION_HOST }} << 'EOF'
+          cd /opt/fulsk
+          ./scripts/backup.sh
+        EOF
+
     - name: Deploy to production
       run: |
         echo "Deploying to production environment..."
-        # Add your production deployment logic here
-        # This could involve:
-        # 1. SSH into production server
-        # 2. Pull latest images
-        # 3. Run deployment script
-        # 4. Perform health checks
+        
+        ssh -o StrictHostKeyChecking=no ${{ secrets.PRODUCTION_USER }}@${{ secrets.PRODUCTION_HOST }} << 'EOF'
+          cd /opt/fulsk
+          
+          # Pull latest code
+          git pull origin main
+          
+          # Update images
+          docker-compose -f docker-compose.prod.yml pull
+          
+          # Blue-green deployment
+          # Scale up new instances
+          docker-compose -f docker-compose.prod.yml up -d --scale backend=2 --scale frontend=2
+          
+          # Health check on new instances
+          sleep 30
+          
+          # Remove old instances
+          docker-compose -f docker-compose.prod.yml up -d --scale backend=1 --scale frontend=1
+          
+          # Final health check
+          for i in {1..30}; do
+            if curl -f http://localhost/health; then
+              echo "Production deployment successful"
+              break
+            fi
+            echo "Waiting for service to start..."
+            sleep 10
+          done
+          
+          # Ensure monitoring is running
+          docker-compose -f docker-compose.monitoring.yml up -d
+        EOF
+
+    - name: Run production tests
+      run: |
+        # Run comprehensive tests against production
+        curl -f http://${{ secrets.PRODUCTION_HOST }}/health
+        curl -f http://${{ secrets.PRODUCTION_HOST }}/api/health
+        
+        # Test key endpoints
+        curl -f http://${{ secrets.PRODUCTION_HOST }}/api/auth/status
+        curl -f http://${{ secrets.PRODUCTION_HOST }}/api/devices/status
+
+    - name: Update monitoring dashboards
+      run: |
+        # Update Grafana dashboards with deployment annotation
+        curl -X POST \
+          -H "Authorization: Bearer ${{ secrets.GRAFANA_API_KEY }}" \
+          -H "Content-Type: application/json" \
+          -d '{"dashboardId":1,"panelId":1,"time":'$(date +%s000)',"isRegion":false,"tags":["deployment","production"],"text":"Production deployment: '${{ github.sha }}'"}' \
+          http://${{ secrets.PRODUCTION_HOST }}:3000/api/annotations
 
   notify:
     name: Notify Team
