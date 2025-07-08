@@ -1,15 +1,18 @@
 import express from 'express';
 import cors from 'cors';
-import helmet from 'helmet';
 import dotenv from 'dotenv';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+import morgan from 'morgan';
 import authRoutes from '@api/auth';
 import deviceRoutes from '@api/devices';
 import realtimeRoutes from '@api/realtime';
 import sunspecRoutes from '@api/sunspec';
 import { DataCollectionService } from '@services/DataCollectionService';
 import { connectDatabase, checkDatabaseHealth } from '@utils/database';
+import { errorHandler, notFoundHandler, requestLogger } from '@middleware/errorHandler';
+import { securityMiddleware, corsOptions, requestSizeLimiter, apiLimiter } from '@middleware/security';
+import logger, { stream, logInfo, logError } from '@utils/logger';
 
 // Load environment variables
 dotenv.config();
@@ -17,25 +20,27 @@ dotenv.config();
 const app = express();
 const server = createServer(app);
 const io = new Server(server, {
-  cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:3001",
-    methods: ["GET", "POST"]
-  }
+  cors: corsOptions,
+  transports: ['websocket', 'polling']
 });
 
 const PORT = parseInt(process.env.PORT || '3000');
 const HOST = process.env.HOST || 'localhost';
 
-// Security middleware
-app.use(helmet());
-app.use(cors({
-  origin: process.env.CLIENT_URL || "http://localhost:3001",
-  credentials: true
-}));
+// Apply security middleware
+app.use(securityMiddleware);
+app.use(cors(corsOptions));
 
-// Body parsing middleware
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
+// Request logging
+app.use(morgan('combined', { stream }));
+app.use(requestLogger);
+
+// Body parsing middleware with size limits
+app.use(express.json({ limit: requestSizeLimiter.json }));
+app.use(express.urlencoded(requestSizeLimiter.urlencoded));
+
+// Apply general rate limiting
+app.use('/api', apiLimiter);
 
 // Health check endpoint
 app.get('/health', async (req, res) => {
@@ -73,61 +78,60 @@ app.get('/', (req, res) => {
 
 // WebSocket connection handling
 io.on('connection', (socket) => {
-  console.log('Client connected:', socket.id);
+  logInfo('Client connected', { socketId: socket.id });
   
   socket.on('subscribe-device', (deviceId: string) => {
+    // Validate deviceId format
+    if (!deviceId || typeof deviceId !== 'string' || deviceId.length > 100) {
+      socket.emit('error', { message: 'Invalid device ID' });
+      return;
+    }
+    
     socket.join(`device-${deviceId}`);
-    console.log(`Client ${socket.id} subscribed to device ${deviceId}`);
+    logInfo('Client subscribed to device', { socketId: socket.id, deviceId });
   });
   
   socket.on('unsubscribe-device', (deviceId: string) => {
     socket.leave(`device-${deviceId}`);
-    console.log(`Client ${socket.id} unsubscribed from device ${deviceId}`);
+    logInfo('Client unsubscribed from device', { socketId: socket.id, deviceId });
   });
   
   socket.on('disconnect', () => {
-    console.log('Client disconnected:', socket.id);
+    logInfo('Client disconnected', { socketId: socket.id });
+  });
+  
+  socket.on('error', (error) => {
+    logError(error, { socketId: socket.id });
   });
 });
 
-// Error handling middleware
-app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error('Error:', err.message);
-  res.status(500).json({
-    error: 'Internal Server Error',
-    message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
-  });
-});
-
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({
-    error: 'Not Found',
-    message: 'The requested resource was not found'
-  });
-});
+// Error handling middleware (must be last)
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 // Initialize database and services
 async function startServer() {
   try {
     // Connect to database first
     await connectDatabase();
+    logInfo('Database connected successfully');
     
     // Initialize data collection service
     const dataCollectionService = new DataCollectionService(io);
+    logInfo('Data collection service initialized');
 
     // Start server
     server.listen(PORT, HOST, () => {
-      console.log(`🚀 Fulsk API server running on http://${HOST}:${PORT}`);
-      console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`🗄️ Database: Connected and ready`);
-      console.log(`🔌 WebSocket server ready for real-time connections`);
-      console.log(`📡 Data collection service initialized`);
+      logInfo(`🚀 Fulsk API server running on http://${HOST}:${PORT}`);
+      logInfo(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+      logInfo(`🗄️ Database: Connected and ready`);
+      logInfo(`🔌 WebSocket server ready for real-time connections`);
+      logInfo(`📡 Data collection service initialized`);
     });
     
     return dataCollectionService;
   } catch (error) {
-    console.error('❌ Failed to start server:', error);
+    logError(error as Error, { context: 'Server startup failed' });
     process.exit(1);
   }
 }
@@ -142,14 +146,35 @@ startServer().then((service) => {
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
-  console.log('🛑 SIGTERM received, shutting down gracefully');
+  logInfo('🛑 SIGTERM received, shutting down gracefully');
   if (dataCollectionService) {
     dataCollectionService.cleanup();
   }
   server.close(() => {
-    console.log('👋 Server closed');
+    logInfo('👋 Server closed');
     process.exit(0);
   });
+});
+
+process.on('SIGINT', () => {
+  logInfo('🛑 SIGINT received, shutting down gracefully');
+  if (dataCollectionService) {
+    dataCollectionService.cleanup();
+  }
+  server.close(() => {
+    logInfo('👋 Server closed');
+    process.exit(0);
+  });
+});
+
+process.on('uncaughtException', (error) => {
+  logError(error, { context: 'Uncaught Exception' });
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  logError(new Error(`Unhandled Rejection: ${reason}`), { promise });
+  process.exit(1);
 });
 
 export { app, io };
