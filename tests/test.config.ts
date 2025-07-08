@@ -13,19 +13,19 @@ const config: Config = {
   ],
 
   // Module resolution
-  moduleNameMapping: {
-    '^@/(.*)$': '<rootDir>/src/$1',
-    '^@api/(.*)$': '<rootDir>/src/api/$1',
-    '^@services/(.*)$': '<rootDir>/src/services/$1',
-    '^@models/(.*)$': '<rootDir>/src/models/$1',
-    '^@middleware/(.*)$': '<rootDir>/src/middleware/$1',
-    '^@utils/(.*)$': '<rootDir>/src/utils/$1',
-    '^@constants/(.*)$': '<rootDir>/src/constants/$1',
-    '^@interfaces/(.*)$': '<rootDir>/src/interfaces/$1',
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/../src/$1',
+    '^@api/(.*)$': '<rootDir>/../src/api/$1',
+    '^@services/(.*)$': '<rootDir>/../src/services/$1',
+    '^@models/(.*)$': '<rootDir>/../src/models/$1',
+    '^@middleware/(.*)$': '<rootDir>/../src/middleware/$1',
+    '^@utils/(.*)$': '<rootDir>/../src/utils/$1',
+    '^@constants/(.*)$': '<rootDir>/../src/constants/$1',
+    '^@interfaces/(.*)$': '<rootDir>/../src/interfaces/$1',
   },
 
   // Setup files
-  setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
+  setupFilesAfterEnv: ['<rootDir>/setup.ts'],
 
   // Coverage configuration
   collectCoverageFrom: [
@@ -56,23 +56,27 @@ const config: Config = {
   projects: [
     {
       displayName: 'unit',
-      testMatch: ['<rootDir>/tests/unit/**/*.test.ts'],
+      testMatch: ['<rootDir>/unit/**/*.test.ts'],
       testEnvironment: 'node',
-      setupFilesAfterEnv: ['<rootDir>/tests/setup.ts']
+      setupFilesAfterEnv: ['<rootDir>/setup.ts']
     },
     {
       displayName: 'integration',
-      testMatch: ['<rootDir>/tests/integration/**/*.test.ts'],
+      testMatch: ['<rootDir>/integration/**/*.test.ts'],
       testEnvironment: 'node',
-      setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
-      testTimeout: 30000
+      setupFilesAfterEnv: ['<rootDir>/setup.ts']
     },
     {
       displayName: 'e2e',
-      testMatch: ['<rootDir>/tests/e2e/**/*.test.ts'],
+      testMatch: ['<rootDir>/e2e/**/*.test.ts'],
       testEnvironment: 'node',
-      setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
-      testTimeout: 60000
+      setupFilesAfterEnv: ['<rootDir>/setup.ts']
+    },
+    {
+      displayName: 'modbus',
+      testMatch: ['<rootDir>/modbus/**/*.test.ts'],
+      testEnvironment: 'node',
+      setupFilesAfterEnv: ['<rootDir>/setup.ts']
     }
   ],
 
@@ -122,8 +126,8 @@ const config: Config = {
   ],
 
   // Global setup and teardown
-  globalSetup: '<rootDir>/tests/global-setup.ts',
-  globalTeardown: '<rootDir>/tests/global-teardown.ts'
+  // globalSetup: '<rootDir>/global-setup.ts',
+  // globalTeardown: '<rootDir>/global-teardown.ts'
 };
 
 export default config;

@@ -1,4 +1,4 @@
-import dotenv from 'dotenv';
+const dotenv = require('dotenv');
 
 // Load test environment variables
 dotenv.config({ path: '.env.test' });
@@ -27,12 +27,14 @@ jest.mock('redis', () => ({
 }));
 
 // Export test utilities
-export const testConfig = {
-  database: {
-    url: process.env.TEST_DATABASE_URL || 'postgresql://test_user:test_pass@localhost:5432/fulsk_test',
-  },
-  jwt: {
-    secret: 'test-jwt-secret',
-    expiresIn: '1h',
-  },
+module.exports = {
+  testConfig: {
+    database: {
+      url: process.env.TEST_DATABASE_URL || 'postgresql://test_user:test_pass@localhost:5432/fulsk_test',
+    },
+    jwt: {
+      secret: 'test-jwt-secret',
+      expiresIn: '1h',
+    },
+  }
 };

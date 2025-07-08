@@ -8,6 +8,9 @@ import authRoutes from '@api/auth';
 import deviceRoutes from '@api/devices';
 import realtimeRoutes from '@api/realtime';
 import sunspecRoutes from '@api/sunspec';
+import aiRoutes from '@api/routes/ai';
+import weatherRoutes from '@api/routes/weather';
+import energyRoutes from '@api/routes/energy';
 import { DataCollectionService } from '@services/DataCollectionService';
 import { connectDatabase, checkDatabaseHealth } from '@utils/database';
 import { errorHandler, notFoundHandler, requestLogger } from '@middleware/errorHandler';
@@ -60,6 +63,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/devices', deviceRoutes);
 app.use('/api/realtime', realtimeRoutes);
 app.use('/api/sunspec', sunspecRoutes);
+app.use('/api/ai', aiRoutes);
+app.use('/api/weather', weatherRoutes);
+app.use('/api/energy', energyRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {
@@ -71,7 +77,10 @@ app.get('/', (req, res) => {
       auth: '/api/auth',
       devices: '/api/devices',
       realtime: '/api/realtime',
-      sunspec: '/api/sunspec'
+      sunspec: '/api/sunspec',
+      ai: '/api/ai',
+      weather: '/api/weather',
+      energy: '/api/energy'
     }
   });
 });
