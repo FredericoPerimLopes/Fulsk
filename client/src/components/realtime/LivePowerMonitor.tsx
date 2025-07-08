@@ -4,12 +4,12 @@ import {
   Card,
   CardContent,
   Typography,
-  Grid,
   LinearProgress,
   Chip,
   IconButton,
   Tooltip,
-  useTheme
+  useTheme,
+  Stack
 } from '@mui/material';
 import {
   ElectricBolt,
@@ -101,13 +101,13 @@ export const LivePowerMonitor: React.FC<LivePowerMonitorProps> = ({
       const device = targetDevices[0];
       if (!device) return null;
       
-      const latestData = deviceData[device.id]?.[0];
+      const latestData = (deviceData as any)[device.id]?.[0];
       if (!latestData) return null;
       
       return {
         currentPower: latestData.power,
-        peakPower: Math.max(...(deviceData[device.id]?.slice(0, 60).map(d => d.power) || [0])),
-        averagePower: deviceData[device.id]?.slice(0, 60).reduce((sum, d) => sum + d.power, 0) / Math.min(60, deviceData[device.id]?.length || 1) || 0,
+        peakPower: Math.max(...((deviceData as any)[device.id]?.slice(0, 60).map((d: any) => d.power) || [0])),
+        averagePower: (deviceData as any)[device.id]?.slice(0, 60).reduce((sum: any, d: any) => sum + d.power, 0) / Math.min(60, (deviceData as any)[device.id]?.length || 1) || 0,
         efficiency: latestData.efficiency || 0,
         voltage: latestData.voltage,
         current: latestData.current,
@@ -229,9 +229,9 @@ export const LivePowerMonitor: React.FC<LivePowerMonitorProps> = ({
           </Tooltip>
         </Box>
 
-        <Grid container spacing={2} sx={{ mb: 2 }}>
+        <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
           {/* Current Power */}
-          <Grid item xs={6} md={3}>
+          <Box sx={{ flex: 1 }}>
             <Box sx={{ textAlign: 'center' }}>
               <Typography variant="body2" color="textSecondary">
                 Current Power
@@ -243,10 +243,10 @@ export const LivePowerMonitor: React.FC<LivePowerMonitorProps> = ({
                 </Typography>
               </Box>
             </Box>
-          </Grid>
+          </Box>
 
           {/* Peak Power */}
-          <Grid item xs={6} md={3}>
+          <Box sx={{ flex: 1 }}>
             <Box sx={{ textAlign: 'center' }}>
               <Typography variant="body2" color="textSecondary">
                 Peak Power
@@ -255,10 +255,10 @@ export const LivePowerMonitor: React.FC<LivePowerMonitorProps> = ({
                 {formatPower(aggregatedData.peakPower)}
               </Typography>
             </Box>
-          </Grid>
+          </Box>
 
           {/* Efficiency */}
-          <Grid item xs={6} md={3}>
+          <Box sx={{ flex: 1 }}>
             <Box sx={{ textAlign: 'center' }}>
               <Typography variant="body2" color="textSecondary">
                 Efficiency
@@ -283,10 +283,10 @@ export const LivePowerMonitor: React.FC<LivePowerMonitorProps> = ({
                 />
               </Box>
             </Box>
-          </Grid>
+          </Box>
 
           {/* Status */}
-          <Grid item xs={6} md={3}>
+          <Box sx={{ flex: 1 }}>
             <Box sx={{ textAlign: 'center' }}>
               <Typography variant="body2" color="textSecondary">
                 Status
@@ -298,8 +298,8 @@ export const LivePowerMonitor: React.FC<LivePowerMonitorProps> = ({
                 size="small"
               />
             </Box>
-          </Grid>
-        </Grid>
+          </Box>
+        </Stack>
 
         {/* Power Chart */}
         <Box sx={{ height: chartHeight, mt: 2 }}>
@@ -345,8 +345,8 @@ export const LivePowerMonitor: React.FC<LivePowerMonitorProps> = ({
 
         {/* Additional metrics for non-compact view */}
         {!compact && aggregatedData.voltage && (
-          <Grid container spacing={2} sx={{ mt: 2 }}>
-            <Grid item xs={4}>
+          <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+            <Box sx={{ flex: 1 }}>
               <Box sx={{ textAlign: 'center' }}>
                 <Typography variant="body2" color="textSecondary">
                   Voltage
@@ -355,9 +355,9 @@ export const LivePowerMonitor: React.FC<LivePowerMonitorProps> = ({
                   {aggregatedData.voltage.toFixed(1)} V
                 </Typography>
               </Box>
-            </Grid>
+            </Box>
             
-            <Grid item xs={4}>
+            <Box sx={{ flex: 1 }}>
               <Box sx={{ textAlign: 'center' }}>
                 <Typography variant="body2" color="textSecondary">
                   Current
@@ -366,9 +366,9 @@ export const LivePowerMonitor: React.FC<LivePowerMonitorProps> = ({
                   {aggregatedData.current?.toFixed(1)} A
                 </Typography>
               </Box>
-            </Grid>
+            </Box>
             
-            <Grid item xs={4}>
+            <Box sx={{ flex: 1 }}>
               <Box sx={{ textAlign: 'center' }}>
                 <Typography variant="body2" color="textSecondary">
                   Temperature
@@ -377,8 +377,8 @@ export const LivePowerMonitor: React.FC<LivePowerMonitorProps> = ({
                   {aggregatedData.temperature?.toFixed(1)}°C
                 </Typography>
               </Box>
-            </Grid>
-          </Grid>
+            </Box>
+          </Stack>
         )}
 
         {/* Last update time */}

@@ -4,7 +4,6 @@ import {
   Card,
   CardContent,
   Typography,
-  Grid,
   Button,
   ButtonGroup,
   FormControl,
@@ -24,7 +23,8 @@ import {
   DialogActions,
   Slider,
   Switch,
-  FormControlLabel
+  FormControlLabel,
+  Stack
 } from '@mui/material';
 import {
   Timeline,
@@ -365,13 +365,13 @@ export const InverterCharts: React.FC<InverterChartsProps> = ({
 
   const renderStatCards = () => {
     return (
-      <Grid container spacing={2} sx={{ mb: 3 }}>
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 3 }}>
         {selectedMetrics.map((metric) => {
           const stats = calculateStats(chartData, metric);
           const icon = getMetricIcon(metric);
           
           return (
-            <Grid item xs={6} md={3} key={metric}>
+            <Box key={metric} sx={{ flex: 1 }}>
               <Paper sx={{ p: 2 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                   {icon}
@@ -386,10 +386,10 @@ export const InverterCharts: React.FC<InverterChartsProps> = ({
                   Avg | Max: {formatValue(stats.max, metric)}
                 </Typography>
               </Paper>
-            </Grid>
+            </Box>
           );
         })}
-      </Grid>
+      </Stack>
     );
   };
 
@@ -496,9 +496,10 @@ export const InverterCharts: React.FC<InverterChartsProps> = ({
       {/* Statistics Cards */}
       {renderStatCards()}
 
-      <Grid container spacing={3}>
+      <Stack spacing={3}>
         {/* Main Chart */}
-        <Grid item xs={12} lg={showComparison ? 8 : 12}>
+        <Stack direction={{ xs: 'column', lg: 'row' }} spacing={3}>
+          <Box sx={{ flex: showComparison ? { lg: 2 } : 1 }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -529,11 +530,11 @@ export const InverterCharts: React.FC<InverterChartsProps> = ({
               {renderChart()}
             </CardContent>
           </Card>
-        </Grid>
+          </Box>
 
-        {/* Energy Distribution */}
-        {showComparison && (
-          <Grid item xs={12} lg={4}>
+          {/* Energy Distribution */}
+          {showComparison && (
+            <Box sx={{ flex: { lg: 1 } }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
@@ -542,12 +543,13 @@ export const InverterCharts: React.FC<InverterChartsProps> = ({
                 {renderPieChart()}
               </CardContent>
             </Card>
-          </Grid>
-        )}
+            </Box>
+          )}
+        </Stack>
 
         {/* Device Comparison */}
         {showComparison && (
-          <Grid item xs={12}>
+          <Box>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
@@ -584,9 +586,9 @@ export const InverterCharts: React.FC<InverterChartsProps> = ({
                 </Typography>
               </CardContent>
             </Card>
-          </Grid>
+          </Box>
         )}
-      </Grid>
+      </Stack>
 
       {/* Settings Dialog */}
       <Dialog open={showSettings} onClose={() => setShowSettings(false)}>

@@ -4,7 +4,6 @@ import {
   Card,
   CardContent,
   Typography,
-  Grid,
   List,
   ListItem,
   ListItemIcon,
@@ -33,7 +32,8 @@ import {
   Switch,
   FormControlLabel,
   Collapse,
-  useTheme
+  useTheme,
+  Stack
 } from '@mui/material';
 import {
   Warning,
@@ -429,8 +429,12 @@ export const AlertManagement: React.FC<AlertManagementProps> = ({
       </Box>
 
       {/* Alert Statistics */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={6} md={3}>
+      <Stack 
+        direction={{ xs: 'column', sm: 'row' }} 
+        spacing={2} 
+        sx={{ mb: 3 }}
+      >
+        <Box sx={{ flex: 1 }}>
           <Card>
             <CardContent sx={{ textAlign: 'center', py: 2 }}>
               <ErrorIcon color="error" sx={{ fontSize: 24, mb: 1 }} />
@@ -442,9 +446,9 @@ export const AlertManagement: React.FC<AlertManagementProps> = ({
               </Typography>
             </CardContent>
           </Card>
-        </Grid>
+        </Box>
         
-        <Grid item xs={6} md={3}>
+        <Box sx={{ flex: 1 }}>
           <Card>
             <CardContent sx={{ textAlign: 'center', py: 2 }}>
               <Warning color="warning" sx={{ fontSize: 24, mb: 1 }} />
@@ -456,9 +460,9 @@ export const AlertManagement: React.FC<AlertManagementProps> = ({
               </Typography>
             </CardContent>
           </Card>
-        </Grid>
+        </Box>
         
-        <Grid item xs={6} md={3}>
+        <Box sx={{ flex: 1 }}>
           <Card>
             <CardContent sx={{ textAlign: 'center', py: 2 }}>
               <Info color="info" sx={{ fontSize: 24, mb: 1 }} />
@@ -470,9 +474,9 @@ export const AlertManagement: React.FC<AlertManagementProps> = ({
               </Typography>
             </CardContent>
           </Card>
-        </Grid>
+        </Box>
         
-        <Grid item xs={6} md={3}>
+        <Box sx={{ flex: 1 }}>
           <Card>
             <CardContent sx={{ textAlign: 'center', py: 2 }}>
               <CheckCircle color="success" sx={{ fontSize: 24, mb: 1 }} />
@@ -484,8 +488,8 @@ export const AlertManagement: React.FC<AlertManagementProps> = ({
               </Typography>
             </CardContent>
           </Card>
-        </Grid>
-      </Grid>
+        </Box>
+      </Stack>
 
       {/* Tabs */}
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
@@ -498,22 +502,24 @@ export const AlertManagement: React.FC<AlertManagementProps> = ({
       <TabPanel value={tabValue} index={0}>
         {/* Filters */}
         <Paper sx={{ p: 2, mb: 3 }}>
-          <Grid container spacing={2} alignItems="center">
-            <Grid item xs={12} md={4}>
-              <TextField
-                fullWidth
-                size="small"
-                placeholder="Search alerts..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                InputProps={{
-                  startAdornment: <Search sx={{ mr: 1, color: 'text.secondary' }} />
-                }}
-              />
-            </Grid>
+          <Stack spacing={2}>
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="Search alerts..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              InputProps={{
+                startAdornment: <Search sx={{ mr: 1, color: 'text.secondary' }} />
+              }}
+            />
             
-            <Grid item xs={6} md={2}>
-              <FormControl fullWidth size="small">
+            <Stack 
+              direction={{ xs: 'column', sm: 'row' }} 
+              spacing={2} 
+              alignItems="center"
+            >
+              <FormControl size="small" sx={{ minWidth: 120 }}>
                 <InputLabel>Severity</InputLabel>
                 <Select
                   value={severityFilter}
@@ -526,10 +532,8 @@ export const AlertManagement: React.FC<AlertManagementProps> = ({
                   <MenuItem value="INFO">Info</MenuItem>
                 </Select>
               </FormControl>
-            </Grid>
-            
-            <Grid item xs={6} md={2}>
-              <FormControl fullWidth size="small">
+              
+              <FormControl size="small" sx={{ minWidth: 150 }}>
                 <InputLabel>Device</InputLabel>
                 <Select
                   value={deviceFilter}
@@ -544,9 +548,7 @@ export const AlertManagement: React.FC<AlertManagementProps> = ({
                   ))}
                 </Select>
               </FormControl>
-            </Grid>
-            
-            <Grid item xs={12} md={4}>
+              
               <FormControlLabel
                 control={
                   <Switch
@@ -557,8 +559,8 @@ export const AlertManagement: React.FC<AlertManagementProps> = ({
                 }
                 label="Show acknowledged"
               />
-            </Grid>
-          </Grid>
+            </Stack>
+          </Stack>
         </Paper>
 
         {/* Alerts List */}
@@ -704,9 +706,7 @@ export const AlertManagement: React.FC<AlertManagementProps> = ({
       {showRules && (
         <TabPanel value={tabValue} index={1}>
           {/* Alert Rules */}
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <Card>
+          <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
                     Alert Rules Configuration
@@ -778,8 +778,6 @@ export const AlertManagement: React.FC<AlertManagementProps> = ({
                   )}
                 </CardContent>
               </Card>
-            </Grid>
-          </Grid>
         </TabPanel>
       )}
 
@@ -795,27 +793,25 @@ export const AlertManagement: React.FC<AlertManagementProps> = ({
         </DialogTitle>
         <DialogContent>
           {selectedAlert && (
-            <Box>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                    {getSeverityIcon(selectedAlert.severity)}
-                    <Typography variant="h6">
-                      {selectedAlert.message}
-                    </Typography>
-                  </Box>
-                </Grid>
-                
-                <Grid item xs={6}>
+            <Stack spacing={2}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                {getSeverityIcon(selectedAlert.severity)}
+                <Typography variant="h6">
+                  {selectedAlert.message}
+                </Typography>
+              </Box>
+              
+              <Stack direction="row" spacing={2}>
+                <Box sx={{ flex: 1 }}>
                   <Typography variant="body2" color="textSecondary">
                     Device
                   </Typography>
                   <Typography variant="body1">
                     {selectedAlert.deviceName}
                   </Typography>
-                </Grid>
+                </Box>
                 
-                <Grid item xs={6}>
+                <Box sx={{ flex: 1 }}>
                   <Typography variant="body2" color="textSecondary">
                     Severity
                   </Typography>
@@ -824,36 +820,38 @@ export const AlertManagement: React.FC<AlertManagementProps> = ({
                     color={getSeverityColor(selectedAlert.severity)}
                     size="small"
                   />
-                </Grid>
-                
-                <Grid item xs={6}>
+                </Box>
+              </Stack>
+              
+              <Stack direction="row" spacing={2}>
+                <Box sx={{ flex: 1 }}>
                   <Typography variant="body2" color="textSecondary">
                     Type
                   </Typography>
                   <Typography variant="body1">
                     {selectedAlert.type}
                   </Typography>
-                </Grid>
+                </Box>
                 
-                <Grid item xs={6}>
+                <Box sx={{ flex: 1 }}>
                   <Typography variant="body2" color="textSecondary">
                     Status
                   </Typography>
                   <Typography variant="body1">
                     {selectedAlert.acknowledged ? 'Acknowledged' : 'Active'}
                   </Typography>
-                </Grid>
-                
-                <Grid item xs={12}>
-                  <Typography variant="body2" color="textSecondary">
-                    Timestamp
-                  </Typography>
-                  <Typography variant="body1">
-                    {new Date(selectedAlert.timestamp).toLocaleString()}
-                  </Typography>
-                </Grid>
-              </Grid>
-            </Box>
+                </Box>
+              </Stack>
+              
+              <Box>
+                <Typography variant="body2" color="textSecondary">
+                  Timestamp
+                </Typography>
+                <Typography variant="body1">
+                  {new Date(selectedAlert.timestamp).toLocaleString()}
+                </Typography>
+              </Box>
+            </Stack>
           )}
         </DialogContent>
         <DialogActions>
@@ -885,17 +883,15 @@ export const AlertManagement: React.FC<AlertManagementProps> = ({
           Create Alert Rule
         </DialogTitle>
         <DialogContent>
-          <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Rule Name"
-                value={newRule.name}
-                onChange={(e) => setNewRule(prev => ({ ...prev, name: e.target.value }))}
-              />
-            </Grid>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            <TextField
+              fullWidth
+              label="Rule Name"
+              value={newRule.name}
+              onChange={(e) => setNewRule(prev => ({ ...prev, name: e.target.value }))}
+            />
             
-            <Grid item xs={6}>
+            <Stack direction="row" spacing={2}>
               <FormControl fullWidth>
                 <InputLabel>Metric</InputLabel>
                 <Select
@@ -910,9 +906,7 @@ export const AlertManagement: React.FC<AlertManagementProps> = ({
                   <MenuItem value="current">Current</MenuItem>
                 </Select>
               </FormControl>
-            </Grid>
-            
-            <Grid item xs={6}>
+              
               <FormControl fullWidth>
                 <InputLabel>Condition</InputLabel>
                 <Select
@@ -926,9 +920,9 @@ export const AlertManagement: React.FC<AlertManagementProps> = ({
                   <MenuItem value="not_equals">Not equals</MenuItem>
                 </Select>
               </FormControl>
-            </Grid>
+            </Stack>
             
-            <Grid item xs={6}>
+            <Stack direction="row" spacing={2}>
               <TextField
                 fullWidth
                 label="Threshold"
@@ -936,9 +930,7 @@ export const AlertManagement: React.FC<AlertManagementProps> = ({
                 value={newRule.threshold}
                 onChange={(e) => setNewRule(prev => ({ ...prev, threshold: parseFloat(e.target.value) }))}
               />
-            </Grid>
-            
-            <Grid item xs={6}>
+              
               <FormControl fullWidth>
                 <InputLabel>Severity</InputLabel>
                 <Select
@@ -951,9 +943,9 @@ export const AlertManagement: React.FC<AlertManagementProps> = ({
                   <MenuItem value="CRITICAL">Critical</MenuItem>
                 </Select>
               </FormControl>
-            </Grid>
+            </Stack>
             
-            <Grid item xs={12}>
+            <Box>
               <Typography variant="subtitle2" gutterBottom>
                 Notifications
               </Typography>
@@ -993,8 +985,8 @@ export const AlertManagement: React.FC<AlertManagementProps> = ({
                 }
                 label="SMS"
               />
-            </Grid>
-          </Grid>
+            </Box>
+          </Stack>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setRuleDialogOpen(false)}>

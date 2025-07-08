@@ -25,7 +25,7 @@ import {
   TrendingUp,
   TrendingDown,
   BatteryChargingFull,
-  Eco,
+  Nature,
   AttachMoney,
   Speed
 } from '@mui/icons-material';
@@ -142,10 +142,10 @@ export const AnalyticsPage: React.FC = () => {
     setIsLoading(true);
     
     // Generate energy production data
-    const energyChartData = [];
-    const efficiencyChartData = [];
-    const weatherData = [];
-    const costData = [];
+    const energyChartData: any[] = [];
+    const efficiencyChartData: any[] = [];
+    const weatherData: any[] = [];
+    const costData: any[] = [];
     
     const days = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 90;
     
@@ -254,18 +254,18 @@ export const AnalyticsPage: React.FC = () => {
       </Box>
 
       {/* Key Metrics */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid xs={12} sm={6} md={3}>
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} sx={{ mb: 4 }}>
+        <Box sx={{ flex: 1 }}>
           <MetricCard
             title="Total Energy"
             value={totalEnergyPeriod.toFixed(1)}
             unit="kWh"
             change={12.5}
-            icon={<Energy />}
+            icon={<BatteryChargingFull />}
             color="#1976d2"
           />
-        </Grid>
-        <Grid xs={12} sm={6} md={3}>
+        </Box>
+        <Box sx={{ flex: 1 }}>
           <MetricCard
             title="Avg Efficiency"
             value={avgEfficiency.toFixed(1)}
@@ -274,8 +274,8 @@ export const AnalyticsPage: React.FC = () => {
             icon={<Speed />}
             color="#2e7d32"
           />
-        </Grid>
-        <Grid xs={12} sm={6} md={3}>
+        </Box>
+        <Box sx={{ flex: 1 }}>
           <MetricCard
             title="Cost Savings"
             value={`$${totalSavings.toFixed(2)}`}
@@ -283,18 +283,18 @@ export const AnalyticsPage: React.FC = () => {
             icon={<AttachMoney />}
             color="#ed6c02"
           />
-        </Grid>
-        <Grid xs={12} sm={6} md={3}>
+        </Box>
+        <Box sx={{ flex: 1 }}>
           <MetricCard
             title="CO₂ Saved"
             value={totalCO2Saved.toFixed(1)}
             unit="kg"
             change={15.7}
-            icon={<Eco />}
+            icon={<Nature />}
             color="#2e7d32"
           />
-        </Grid>
-      </Grid>
+        </Box>
+      </Stack>
 
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
         <Tabs value={tabValue} onChange={(_, newValue) => setTabValue(newValue)}>
@@ -306,8 +306,8 @@ export const AnalyticsPage: React.FC = () => {
       </Box>
 
       <TabPanel value={tabValue} index={0}>
-        <Grid container spacing={3}>
-          <Grid xs={12} lg={8}>
+        <Stack direction={{ xs: 'column', lg: 'row' }} spacing={3}>
+          <Box sx={{ flex: { lg: 2 } }}>
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom>
                 Energy Production Over Time
@@ -328,8 +328,8 @@ export const AnalyticsPage: React.FC = () => {
                 </ResponsiveContainer>
               </Box>
             </Paper>
-          </Grid>
-          <Grid xs={12} lg={4}>
+          </Box>
+          <Box sx={{ flex: { lg: 1 } }}>
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom>
                 Efficiency Trends
@@ -346,13 +346,13 @@ export const AnalyticsPage: React.FC = () => {
                 </ResponsiveContainer>
               </Box>
             </Paper>
-          </Grid>
-        </Grid>
+          </Box>
+        </Stack>
       </TabPanel>
 
       <TabPanel value={tabValue} index={1}>
-        <Grid container spacing={3}>
-          <Grid xs={12} lg={8}>
+        <Stack direction={{ xs: 'column', lg: 'row' }} spacing={3}>
+          <Box sx={{ flex: { lg: 2 } }}>
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom>
                 Device Performance Comparison
@@ -393,8 +393,8 @@ export const AnalyticsPage: React.FC = () => {
                 </Table>
               </TableContainer>
             </Paper>
-          </Grid>
-          <Grid xs={12} lg={4}>
+          </Box>
+          <Box sx={{ flex: { lg: 1 } }}>
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom>
                 Performance Distribution
@@ -407,7 +407,7 @@ export const AnalyticsPage: React.FC = () => {
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      label={({ name, percent }: any) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="value"
@@ -421,125 +421,117 @@ export const AnalyticsPage: React.FC = () => {
                 </ResponsiveContainer>
               </Box>
             </Paper>
-          </Grid>
-        </Grid>
+          </Box>
+        </Stack>
       </TabPanel>
 
       <TabPanel value={tabValue} index={2}>
-        <Grid container spacing={3}>
-          <Grid xs={12}>
-            <Paper sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom>
-                Weather Impact on Energy Production
-              </Typography>
-              <Box sx={{ height: 400 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <ComposedChart data={weatherCorrelation}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-                    <YAxis yAxisId="left" tick={{ fontSize: 12 }} />
-                    <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12 }} />
-                    <Tooltip />
-                    <Legend />
-                    <Bar yAxisId="left" dataKey="energy" fill="#1976d2" name="Energy Production (kWh)" />
-                    <Line yAxisId="right" type="monotone" dataKey="irradiance" stroke="#ff7300" name="Solar Irradiance (W/m²)" />
-                    <Line yAxisId="right" type="monotone" dataKey="temperature" stroke="#82ca9d" name="Temperature (°C)" />
-                  </ComposedChart>
-                </ResponsiveContainer>
-              </Box>
-            </Paper>
-          </Grid>
-        </Grid>
+        <Box>
+          <Paper sx={{ p: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              Weather Impact on Energy Production
+            </Typography>
+            <Box sx={{ height: 400 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={weatherCorrelation}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+                  <YAxis yAxisId="left" tick={{ fontSize: 12 }} />
+                  <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12 }} />
+                  <Tooltip />
+                  <Legend />
+                  <Bar yAxisId="left" dataKey="energy" fill="#1976d2" name="Energy Production (kWh)" />
+                  <Line yAxisId="right" type="monotone" dataKey="irradiance" stroke="#ff7300" name="Solar Irradiance (W/m²)" />
+                  <Line yAxisId="right" type="monotone" dataKey="temperature" stroke="#82ca9d" name="Temperature (°C)" />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </Box>
+          </Paper>
+        </Box>
       </TabPanel>
 
       <TabPanel value={tabValue} index={3}>
-        <Grid container spacing={3}>
-          <Grid xs={12} lg={6}>
-            <Paper sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom>
-                Daily Cost Savings
-              </Typography>
-              <Box sx={{ height: 300 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={costSavings}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-                    <YAxis tick={{ fontSize: 12 }} />
-                    <Tooltip formatter={(value: number) => [`$${value.toFixed(2)}`, 'Savings']} />
-                    <Area type="monotone" dataKey="savings" stroke="#ed6c02" fill="#ed6c02" fillOpacity={0.3} />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </Box>
-            </Paper>
-          </Grid>
-          <Grid xs={12} lg={6}>
-            <Paper sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom>
-                CO₂ Emissions Saved
-              </Typography>
-              <Box sx={{ height: 300 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={costSavings}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-                    <YAxis tick={{ fontSize: 12 }} />
-                    <Tooltip formatter={(value: number) => [`${value.toFixed(1)} kg`, 'CO₂ Saved']} />
-                    <Area type="monotone" dataKey="co2Saved" stroke="#2e7d32" fill="#2e7d32" fillOpacity={0.3} />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </Box>
-            </Paper>
-          </Grid>
-          <Grid xs={12}>
+        <Stack spacing={3}>
+          <Stack direction={{ xs: 'column', lg: 'row' }} spacing={3}>
+            <Box sx={{ flex: 1 }}>
+              <Paper sx={{ p: 3 }}>
+                <Typography variant="h6" gutterBottom>
+                  Daily Cost Savings
+                </Typography>
+                <Box sx={{ height: 300 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={costSavings}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+                      <YAxis tick={{ fontSize: 12 }} />
+                      <Tooltip formatter={(value: number) => [`$${value.toFixed(2)}`, 'Savings']} />
+                      <Area type="monotone" dataKey="savings" stroke="#ed6c02" fill="#ed6c02" fillOpacity={0.3} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </Box>
+              </Paper>
+            </Box>
+            <Box sx={{ flex: 1 }}>
+              <Paper sx={{ p: 3 }}>
+                <Typography variant="h6" gutterBottom>
+                  CO₂ Emissions Saved
+                </Typography>
+                <Box sx={{ height: 300 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={costSavings}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+                      <YAxis tick={{ fontSize: 12 }} />
+                      <Tooltip formatter={(value: number) => [`${value.toFixed(1)} kg`, 'CO₂ Saved']} />
+                      <Area type="monotone" dataKey="co2Saved" stroke="#2e7d32" fill="#2e7d32" fillOpacity={0.3} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </Box>
+              </Paper>
+            </Box>
+          </Stack>
+          <Box>
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom>
                 Financial Summary
               </Typography>
-              <Grid container spacing={3}>
-                <Grid xs={12} sm={6} md={3}>
-                  <Box textAlign="center">
-                    <Typography variant="h4" color="primary">
-                      ${(totalSavings * 365 / (timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 90)).toFixed(0)}
-                    </Typography>
-                    <Typography variant="body2" color="textSecondary">
-                      Projected Annual Savings
-                    </Typography>
-                  </Box>
-                </Grid>
-                <Grid xs={12} sm={6} md={3}>
-                  <Box textAlign="center">
-                    <Typography variant="h4" color="success.main">
-                      ${(totalSavings * 25).toFixed(0)}
-                    </Typography>
-                    <Typography variant="body2" color="textSecondary">
-                      25-Year Lifetime Savings
-                    </Typography>
-                  </Box>
-                </Grid>
-                <Grid xs={12} sm={6} md={3}>
-                  <Box textAlign="center">
-                    <Typography variant="h4" color="info.main">
-                      {(totalEnergyPeriod * 0.12).toFixed(1)}¢
-                    </Typography>
-                    <Typography variant="body2" color="textSecondary">
-                      Cost per kWh Saved
-                    </Typography>
-                  </Box>
-                </Grid>
-                <Grid xs={12} sm={6} md={3}>
-                  <Box textAlign="center">
-                    <Typography variant="h4" color="warning.main">
-                      {((totalSavings * 365 / (timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 90)) / 20000 * 100).toFixed(1)}%
-                    </Typography>
-                    <Typography variant="body2" color="textSecondary">
-                      ROI (Assuming $20k Investment)
-                    </Typography>
-                  </Box>
-                </Grid>
-              </Grid>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
+                <Box sx={{ flex: 1, textAlign: 'center' }}>
+                  <Typography variant="h4" color="primary">
+                    ${(totalSavings * 365 / (timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 90)).toFixed(0)}
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    Projected Annual Savings
+                  </Typography>
+                </Box>
+                <Box sx={{ flex: 1, textAlign: 'center' }}>
+                  <Typography variant="h4" color="success.main">
+                    ${(totalSavings * 25).toFixed(0)}
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    25-Year Lifetime Savings
+                  </Typography>
+                </Box>
+                <Box sx={{ flex: 1, textAlign: 'center' }}>
+                  <Typography variant="h4" color="info.main">
+                    {(totalEnergyPeriod * 0.12).toFixed(1)}¢
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    Cost per kWh Saved
+                  </Typography>
+                </Box>
+                <Box sx={{ flex: 1, textAlign: 'center' }}>
+                  <Typography variant="h4" color="warning.main">
+                    {((totalSavings * 365 / (timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 90)) / 20000 * 100).toFixed(1)}%
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    ROI (Assuming $20k Investment)
+                  </Typography>
+                </Box>
+              </Stack>
             </Paper>
-          </Grid>
-        </Grid>
+          </Box>
+        </Stack>
       </TabPanel>
     </Box>
   );

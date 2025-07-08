@@ -20,7 +20,7 @@
     "@emotion/styled": "^11.14.1",
     "@hookform/resolvers": "^5.1.1",
     "@mui/icons-material": "^7.1.2",
-    "@mui/material": "^7.1.2",
+    "@mui/material": "^7.2.0",
     "@mui/x-charts": "^8.6.0",
     "@mui/x-date-pickers": "^8.6.0",
     "axios": "^1.10.0",

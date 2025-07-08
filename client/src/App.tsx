@@ -11,7 +11,8 @@ import {
   createTheme,
   CssBaseline,
   Box,
-  CircularProgress
+  CircularProgress,
+  Stack
 } from '@mui/material';
 import { useAuthStore } from './stores/authStore';
 import { AuthPage } from './pages/AuthPage';

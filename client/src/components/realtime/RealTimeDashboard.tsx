@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Grid,
   Card,
   CardContent,
   Typography,
@@ -11,7 +10,8 @@ import {
   Paper,
   Divider,
   LinearProgress,
-  useTheme
+  useTheme,
+  Stack
 } from '@mui/material';
 import {
   Refresh,
@@ -101,7 +101,7 @@ export const RealTimeDashboard: React.FC<RealTimeDashboardProps> = ({
       let temperatureCount = 0;
 
       devices.forEach(device => {
-        const latestData = deviceData[device.id]?.[0];
+        const latestData = (deviceData as any)[device.id]?.[0];
         if (latestData) {
           totalPower += latestData.power;
           totalEnergyToday += latestData.energyToday;
@@ -305,8 +305,8 @@ export const RealTimeDashboard: React.FC<RealTimeDashboardProps> = ({
       </Paper>
 
       {/* Main Metrics */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={6} md={3}>
+      <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
+        <Box sx={{ flex: 1 }}>
           <MetricCard
             title="Total Power"
             value={formatPower(systemMetrics.totalPower)}
@@ -314,9 +314,9 @@ export const RealTimeDashboard: React.FC<RealTimeDashboardProps> = ({
             color="primary"
             trend={getTrendIcon()}
           />
-        </Grid>
+        </Box>
         
-        <Grid item xs={6} md={3}>
+        <Box sx={{ flex: 1 }}>
           <MetricCard
             title="Energy Today"
             value={systemMetrics.totalEnergyToday.toFixed(1)}
@@ -324,9 +324,9 @@ export const RealTimeDashboard: React.FC<RealTimeDashboardProps> = ({
             icon={<WbSunny />}
             color="success"
           />
-        </Grid>
+        </Box>
         
-        <Grid item xs={6} md={3}>
+        <Box sx={{ flex: 1 }}>
           <MetricCard
             title="System Efficiency"
             value={systemMetrics.averageEfficiency.toFixed(1)}
@@ -334,9 +334,9 @@ export const RealTimeDashboard: React.FC<RealTimeDashboardProps> = ({
             icon={<Speed />}
             color={systemMetrics.averageEfficiency >= 85 ? 'success' : systemMetrics.averageEfficiency >= 70 ? 'warning' : 'error'}
           />
-        </Grid>
+        </Box>
         
-        <Grid item xs={6} md={3}>
+        <Box sx={{ flex: 1 }}>
           <MetricCard
             title="Avg Temperature"
             value={systemMetrics.averageTemperature.toFixed(1)}
@@ -344,21 +344,21 @@ export const RealTimeDashboard: React.FC<RealTimeDashboardProps> = ({
             icon={<Thermostat />}
             color={systemMetrics.averageTemperature <= 35 ? 'success' : systemMetrics.averageTemperature <= 45 ? 'warning' : 'error'}
           />
-        </Grid>
-      </Grid>
+        </Box>
+      </Stack>
 
-      <Grid container spacing={2}>
+      <Stack direction="row" spacing={2}>
         {/* Live Power Chart */}
-        <Grid item xs={12} lg={8}>
+        <Box sx={{ flex: 1 }}>
           <LivePowerMonitor
             showAll
             compact={compactView}
             timeWindow={30}
           />
-        </Grid>
+        </Box>
 
         {/* System Performance Chart */}
-        <Grid item xs={12} lg={4}>
+        <Box sx={{ flex: 1 }}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -414,23 +414,23 @@ export const RealTimeDashboard: React.FC<RealTimeDashboardProps> = ({
               </Box>
             </CardContent>
           </Card>
-        </Grid>
+        </Box>
 
         {/* Device Status Summary */}
-        <Grid item xs={12}>
+        <Box sx={{ flex: 1 }}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
                 Device Status Summary
               </Typography>
               
-              <Grid container spacing={2}>
+              <Stack direction="row" spacing={2}>
                 {devices.slice(0, compactView ? 4 : 8).map((device) => {
-                  const latestData = deviceData[device.id]?.[0];
+                  const latestData = (deviceData as any)[device.id]?.[0];
                   const deviceAlerts = alerts.filter(a => a.deviceId === device.id && !a.acknowledged);
                   
                   return (
-                    <Grid item xs={12} sm={6} md={compactView ? 6 : 3} key={device.id}>
+                    <Box sx={{ flex: 1, md: compactView ? 6 : 3 }} key={device.id}>
                       <Paper sx={{ p: 2 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                           <Box
@@ -475,10 +475,10 @@ export const RealTimeDashboard: React.FC<RealTimeDashboardProps> = ({
                           </Box>
                         )}
                       </Paper>
-                    </Grid>
+                    </Box>
                   );
                 })}
-              </Grid>
+              </Stack>
               
               {devices.length > (compactView ? 4 : 8) && (
                 <Box sx={{ mt: 2, textAlign: 'center' }}>
@@ -489,8 +489,8 @@ export const RealTimeDashboard: React.FC<RealTimeDashboardProps> = ({
               )}
             </CardContent>
           </Card>
-        </Grid>
-      </Grid>
+        </Box>
+      </Stack>
     </Box>
   );
 };

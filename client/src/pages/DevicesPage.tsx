@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import {
   Box,
   Typography,
-  Grid,
   Card,
   CardContent,
   Chip,
@@ -32,7 +31,8 @@ import {
   Tooltip,
   LinearProgress,
   Tabs,
-  Tab
+  Tab,
+  Stack
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -55,7 +55,7 @@ import {
   Info
 } from '@mui/icons-material';
 import { useDeviceStore } from '../stores/deviceStore';
-import { DeviceStatus, DeviceType, Device } from '../types/api';
+import { DeviceStatus, DeviceType, Device, DeviceLocation, DeviceConfiguration } from '../types/api';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -120,7 +120,38 @@ export const DevicesPage: React.FC = () => {
   const [menuDevice, setMenuDevice] = useState<Device | null>(null);
 
   // Form state
-  const [deviceForm, setDeviceForm] = useState({
+  const [deviceForm, setDeviceForm] = useState<{
+    name: string;
+    type: DeviceType;
+    manufacturer: string;
+    model: string;
+    serialNumber: string;
+    firmwareVersion: string;
+    location: {
+      address: string;
+      city: string;
+      state: string;
+      country: string;
+      zipCode: string;
+      coordinates: { latitude: number; longitude: number };
+      timezone: string;
+    };
+    configuration: {
+      communicationProtocol: 'MQTT' | 'HTTP' | 'MODBUS';
+      dataCollectionInterval: number;
+      alertThresholds: {
+        minPower: number;
+        maxTemperature: number;
+        minVoltage: number;
+        maxVoltage: number;
+      };
+      notifications: {
+        email: boolean;
+        sms: boolean;
+        push: boolean;
+      };
+    };
+  }>({
     name: '',
     type: DeviceType.INVERTER,
     manufacturer: '',
@@ -137,7 +168,7 @@ export const DevicesPage: React.FC = () => {
       timezone: 'America/New_York'
     },
     configuration: {
-      communicationProtocol: 'MQTT' as const,
+      communicationProtocol: 'MQTT',
       dataCollectionInterval: 30,
       alertThresholds: {
         minPower: 0,
@@ -311,8 +342,8 @@ export const DevicesPage: React.FC = () => {
       )}
 
       {/* Device Statistics */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={2.4}>
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} sx={{ mb: 4 }}>
+        <Box sx={{ flex: 1 }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -328,8 +359,8 @@ export const DevicesPage: React.FC = () => {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={2.4}>
+        </Box>
+        <Box sx={{ flex: 1 }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -345,8 +376,8 @@ export const DevicesPage: React.FC = () => {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={2.4}>
+        </Box>
+        <Box sx={{ flex: 1 }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -362,8 +393,8 @@ export const DevicesPage: React.FC = () => {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={2.4}>
+        </Box>
+        <Box sx={{ flex: 1 }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -379,8 +410,8 @@ export const DevicesPage: React.FC = () => {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={2.4}>
+        </Box>
+        <Box sx={{ flex: 1 }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -396,8 +427,8 @@ export const DevicesPage: React.FC = () => {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
-      </Grid>
+        </Box>
+      </Stack>
 
       {/* Filters */}
       <Paper sx={{ p: 2, mb: 3 }}>
@@ -449,10 +480,20 @@ export const DevicesPage: React.FC = () => {
       </Paper>
 
       {/* Device Grid */}
-      <Grid container spacing={3}>
-        {filteredDevices.map((device) => (
-          <Grid item xs={12} sm={6} md={4} key={device.id}>
+      <Stack spacing={3}>
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          sx={{
+            flexWrap: 'wrap',
+            gap: 3,
+            '& > *': {
+              flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 12px)', md: '1 1 calc(33.333% - 16px)' }
+            }
+          }}
+        >
+          {filteredDevices.map((device) => (
             <Card 
+              key={device.id}
               sx={{ 
                 cursor: 'pointer',
                 '&:hover': { boxShadow: 4 },
@@ -523,41 +564,39 @@ export const DevicesPage: React.FC = () => {
                 )}
               </CardContent>
             </Card>
-          </Grid>
-        ))}
+          ))}
+        </Stack>
 
         {filteredDevices.length === 0 && !isLoading && (
-          <Grid item xs={12}>
-            <Card>
-              <CardContent sx={{ textAlign: 'center', py: 6 }}>
-                <DeviceHub sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
-                <Typography variant="h6" color="text.secondary" gutterBottom>
-                  {devices.length === 0 ? 'No devices found' : 'No devices match your filters'}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                  {devices.length === 0 
-                    ? 'Get started by adding your first solar device to the system.'
-                    : 'Try adjusting your search criteria or filters.'
-                  }
-                </Typography>
-                {devices.length === 0 && (
-                  <Button
-                    variant="contained"
-                    startIcon={<AddIcon />}
-                    onClick={() => {
-                      setEditingDevice(null);
-                      resetForm();
-                      setDeviceDialog(true);
-                    }}
-                  >
-                    Add Your First Device
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          </Grid>
+          <Card>
+            <CardContent sx={{ textAlign: 'center', py: 6 }}>
+              <DeviceHub sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+              <Typography variant="h6" color="text.secondary" gutterBottom>
+                {devices.length === 0 ? 'No devices found' : 'No devices match your filters'}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                {devices.length === 0 
+                  ? 'Get started by adding your first solar device to the system.'
+                  : 'Try adjusting your search criteria or filters.'
+                }
+              </Typography>
+              {devices.length === 0 && (
+                <Button
+                  variant="contained"
+                  startIcon={<AddIcon />}
+                  onClick={() => {
+                    setEditingDevice(null);
+                    resetForm();
+                    setDeviceDialog(true);
+                  }}
+                >
+                  Add Your First Device
+                </Button>
+              )}
+            </CardContent>
+          </Card>
         )}
-      </Grid>
+      </Stack>
 
       {/* Device Actions Menu */}
       <Menu
@@ -617,33 +656,32 @@ export const DevicesPage: React.FC = () => {
           </Box>
 
           <TabPanel value={tabValue} index={0}>
-            <Grid container spacing={3}>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Device Name"
-                  value={deviceForm.name}
-                  onChange={(e) => setDeviceForm(prev => ({ ...prev, name: e.target.value }))}
-                  required
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth required>
-                  <InputLabel>Device Type</InputLabel>
-                  <Select
-                    value={deviceForm.type}
-                    label="Device Type"
-                    onChange={(e) => setDeviceForm(prev => ({ ...prev, type: e.target.value as DeviceType }))}
-                  >
-                    <MenuItem value={DeviceType.INVERTER}>Inverter</MenuItem>
-                    <MenuItem value={DeviceType.PANEL}>Solar Panel</MenuItem>
-                    <MenuItem value={DeviceType.BATTERY}>Battery</MenuItem>
-                    <MenuItem value={DeviceType.METER}>Meter</MenuItem>
-                    <MenuItem value={DeviceType.SENSOR}>Sensor</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} sm={6}>
+            <Stack spacing={3}>
+              <TextField
+                fullWidth
+                label="Device Name"
+                value={deviceForm.name}
+                onChange={(e) => setDeviceForm(prev => ({ ...prev, name: e.target.value }))}
+                required
+              />
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
+                <Box sx={{ flex: 1 }}>
+                  <FormControl fullWidth required>
+                    <InputLabel>Device Type</InputLabel>
+                    <Select
+                      value={deviceForm.type}
+                      label="Device Type"
+                      onChange={(e) => setDeviceForm(prev => ({ ...prev, type: e.target.value as DeviceType }))}
+                    >
+                      <MenuItem value={DeviceType.INVERTER}>Inverter</MenuItem>
+                      <MenuItem value={DeviceType.PANEL}>Solar Panel</MenuItem>
+                      <MenuItem value={DeviceType.BATTERY}>Battery</MenuItem>
+                      <MenuItem value={DeviceType.METER}>Meter</MenuItem>
+                      <MenuItem value={DeviceType.SENSOR}>Sensor</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Box>
+                <Box sx={{ flex: 1 }}>
                 <TextField
                   fullWidth
                   label="Manufacturer"
@@ -651,39 +689,39 @@ export const DevicesPage: React.FC = () => {
                   onChange={(e) => setDeviceForm(prev => ({ ...prev, manufacturer: e.target.value }))}
                   required
                 />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Model"
-                  value={deviceForm.model}
-                  onChange={(e) => setDeviceForm(prev => ({ ...prev, model: e.target.value }))}
-                  required
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Serial Number"
-                  value={deviceForm.serialNumber}
-                  onChange={(e) => setDeviceForm(prev => ({ ...prev, serialNumber: e.target.value }))}
-                  required
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Firmware Version"
-                  value={deviceForm.firmwareVersion}
-                  onChange={(e) => setDeviceForm(prev => ({ ...prev, firmwareVersion: e.target.value }))}
-                />
-              </Grid>
-            </Grid>
+                </Box>
+              </Stack>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
+                <Box sx={{ flex: 1 }}>
+                  <TextField
+                    fullWidth
+                    label="Model"
+                    value={deviceForm.model}
+                    onChange={(e) => setDeviceForm(prev => ({ ...prev, model: e.target.value }))}
+                    required
+                  />
+                </Box>
+                <Box sx={{ flex: 1 }}>
+                  <TextField
+                    fullWidth
+                    label="Serial Number"
+                    value={deviceForm.serialNumber}
+                    onChange={(e) => setDeviceForm(prev => ({ ...prev, serialNumber: e.target.value }))}
+                    required
+                  />
+                </Box>
+              </Stack>
+              <TextField
+                fullWidth
+                label="Firmware Version"
+                value={deviceForm.firmwareVersion}
+                onChange={(e) => setDeviceForm(prev => ({ ...prev, firmwareVersion: e.target.value }))}
+              />
+            </Stack>
           </TabPanel>
 
           <TabPanel value={tabValue} index={1}>
-            <Grid container spacing={3}>
-              <Grid item xs={12}>
+            <Stack spacing={3}>
                 <TextField
                   fullWidth
                   label="Address"
@@ -694,182 +732,181 @@ export const DevicesPage: React.FC = () => {
                   }))}
                   required
                 />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="City"
-                  value={deviceForm.location.city}
-                  onChange={(e) => setDeviceForm(prev => ({ 
-                    ...prev, 
-                    location: { ...prev.location, city: e.target.value }
-                  }))}
-                  required
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="State"
-                  value={deviceForm.location.state}
-                  onChange={(e) => setDeviceForm(prev => ({ 
-                    ...prev, 
-                    location: { ...prev.location, state: e.target.value }
-                  }))}
-                  required
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Country"
-                  value={deviceForm.location.country}
-                  onChange={(e) => setDeviceForm(prev => ({ 
-                    ...prev, 
-                    location: { ...prev.location, country: e.target.value }
-                  }))}
-                  required
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="ZIP Code"
-                  value={deviceForm.location.zipCode}
-                  onChange={(e) => setDeviceForm(prev => ({ 
-                    ...prev, 
-                    location: { ...prev.location, zipCode: e.target.value }
-                  }))}
-                  required
-                />
-              </Grid>
-            </Grid>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
+                <Box sx={{ flex: 1 }}>
+                  <TextField
+                    fullWidth
+                    label="City"
+                    value={deviceForm.location.city}
+                    onChange={(e) => setDeviceForm(prev => ({ 
+                      ...prev, 
+                      location: { ...prev.location, city: e.target.value }
+                    }))}
+                    required
+                  />
+                </Box>
+                <Box sx={{ flex: 1 }}>
+                  <TextField
+                    fullWidth
+                    label="State"
+                    value={deviceForm.location.state}
+                    onChange={(e) => setDeviceForm(prev => ({ 
+                      ...prev, 
+                      location: { ...prev.location, state: e.target.value }
+                    }))}
+                    required
+                  />
+                </Box>
+              </Stack>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
+                <Box sx={{ flex: 1 }}>
+                  <TextField
+                    fullWidth
+                    label="Country"
+                    value={deviceForm.location.country}
+                    onChange={(e) => setDeviceForm(prev => ({ 
+                      ...prev, 
+                      location: { ...prev.location, country: e.target.value }
+                    }))}
+                    required
+                  />
+                </Box>
+                <Box sx={{ flex: 1 }}>
+                  <TextField
+                    fullWidth
+                    label="ZIP Code"
+                    value={deviceForm.location.zipCode}
+                    onChange={(e) => setDeviceForm(prev => ({ 
+                      ...prev, 
+                      location: { ...prev.location, zipCode: e.target.value }
+                    }))}
+                    required
+                  />
+                </Box>
+              </Stack>
+            </Stack>
           </TabPanel>
 
           <TabPanel value={tabValue} index={2}>
-            <Grid container spacing={3}>
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth>
-                  <InputLabel>Communication Protocol</InputLabel>
-                  <Select
-                    value={deviceForm.configuration.communicationProtocol}
-                    label="Communication Protocol"
+            <Stack spacing={3}>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
+                <Box sx={{ flex: 1 }}>
+                  <FormControl fullWidth>
+                    <InputLabel>Communication Protocol</InputLabel>
+                    <Select
+                      value={deviceForm.configuration.communicationProtocol}
+                      label="Communication Protocol"
+                      onChange={(e) => setDeviceForm(prev => ({ 
+                        ...prev, 
+                        configuration: { 
+                          ...prev.configuration, 
+                          communicationProtocol: e.target.value as 'MQTT' | 'HTTP' | 'MODBUS'
+                        }
+                      }))}
+                    >
+                      <MenuItem value="MQTT">MQTT</MenuItem>
+                      <MenuItem value="HTTP">HTTP</MenuItem>
+                      <MenuItem value="MODBUS">MODBUS</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Box>
+                <Box sx={{ flex: 1 }}>
+                  <TextField
+                    fullWidth
+                    label="Data Collection Interval (seconds)"
+                    type="number"
+                    value={deviceForm.configuration.dataCollectionInterval}
                     onChange={(e) => setDeviceForm(prev => ({ 
                       ...prev, 
                       configuration: { 
                         ...prev.configuration, 
-                        communicationProtocol: e.target.value as 'MQTT' | 'HTTP' | 'MODBUS'
+                        dataCollectionInterval: Number(e.target.value)
                       }
                     }))}
-                  >
-                    <MenuItem value="MQTT">MQTT</MenuItem>
-                    <MenuItem value="HTTP">HTTP</MenuItem>
-                    <MenuItem value="MODBUS">MODBUS</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Data Collection Interval (seconds)"
-                  type="number"
-                  value={deviceForm.configuration.dataCollectionInterval}
-                  onChange={(e) => setDeviceForm(prev => ({ 
-                    ...prev, 
-                    configuration: { 
-                      ...prev.configuration, 
-                      dataCollectionInterval: Number(e.target.value)
-                    }
-                  }))}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <Typography variant="h6" gutterBottom>
-                  Alert Thresholds
-                </Typography>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Min Power (W)"
-                  type="number"
-                  value={deviceForm.configuration.alertThresholds.minPower}
-                  onChange={(e) => setDeviceForm(prev => ({ 
-                    ...prev, 
-                    configuration: { 
-                      ...prev.configuration, 
-                      alertThresholds: {
-                        ...prev.configuration.alertThresholds,
-                        minPower: Number(e.target.value)
-                      }
-                    }
-                  }))}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Max Temperature (°C)"
-                  type="number"
-                  value={deviceForm.configuration.alertThresholds.maxTemperature}
-                  onChange={(e) => setDeviceForm(prev => ({ 
-                    ...prev, 
-                    configuration: { 
-                      ...prev.configuration, 
-                      alertThresholds: {
-                        ...prev.configuration.alertThresholds,
-                        maxTemperature: Number(e.target.value)
-                      }
-                    }
-                  }))}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <Typography variant="h6" gutterBottom>
-                  Notifications
-                </Typography>
-              </Grid>
-              <Grid item xs={12}>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={deviceForm.configuration.notifications.email}
-                      onChange={(e) => setDeviceForm(prev => ({ 
-                        ...prev, 
-                        configuration: { 
-                          ...prev.configuration, 
-                          notifications: {
-                            ...prev.configuration.notifications,
-                            email: e.target.checked
-                          }
+                  />
+                </Box>
+              </Stack>
+              <Typography variant="h6" gutterBottom>
+                Alert Thresholds
+              </Typography>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
+                <Box sx={{ flex: 1 }}>
+                  <TextField
+                    fullWidth
+                    label="Min Power (W)"
+                    type="number"
+                    value={deviceForm.configuration.alertThresholds.minPower}
+                    onChange={(e) => setDeviceForm(prev => ({ 
+                      ...prev, 
+                      configuration: { 
+                        ...prev.configuration, 
+                        alertThresholds: {
+                          ...prev.configuration.alertThresholds,
+                          minPower: Number(e.target.value)
                         }
-                      }))}
-                    />
-                  }
-                  label="Email Notifications"
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={deviceForm.configuration.notifications.push}
-                      onChange={(e) => setDeviceForm(prev => ({ 
-                        ...prev, 
-                        configuration: { 
-                          ...prev.configuration, 
-                          notifications: {
-                            ...prev.configuration.notifications,
-                            push: e.target.checked
-                          }
+                      }
+                    }))}
+                  />
+                </Box>
+                <Box sx={{ flex: 1 }}>
+                  <TextField
+                    fullWidth
+                    label="Max Temperature (°C)"
+                    type="number"
+                    value={deviceForm.configuration.alertThresholds.maxTemperature}
+                    onChange={(e) => setDeviceForm(prev => ({ 
+                      ...prev, 
+                      configuration: { 
+                        ...prev.configuration, 
+                        alertThresholds: {
+                          ...prev.configuration.alertThresholds,
+                          maxTemperature: Number(e.target.value)
                         }
-                      }))}
-                    />
-                  }
-                  label="Push Notifications"
-                />
-              </Grid>
-            </Grid>
+                      }
+                    }))}
+                  />
+                </Box>
+              </Stack>
+              <Typography variant="h6" gutterBottom>
+                Notifications
+              </Typography>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={deviceForm.configuration.notifications.email}
+                    onChange={(e) => setDeviceForm(prev => ({ 
+                      ...prev, 
+                      configuration: { 
+                        ...prev.configuration, 
+                        notifications: {
+                          ...prev.configuration.notifications,
+                          email: e.target.checked
+                        }
+                      }
+                    }))}
+                  />
+                }
+                label="Email Notifications"
+              />
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={deviceForm.configuration.notifications.push}
+                    onChange={(e) => setDeviceForm(prev => ({ 
+                      ...prev, 
+                      configuration: { 
+                        ...prev.configuration, 
+                        notifications: {
+                          ...prev.configuration.notifications,
+                          push: e.target.checked
+                        }
+                      }
+                    }))}
+                  />
+                }
+                label="Push Notifications"
+              />
+            </Stack>
           </TabPanel>
         </DialogContent>
         <DialogActions>
@@ -903,8 +940,8 @@ export const DevicesPage: React.FC = () => {
         </DialogTitle>
         <DialogContent>
           {selectedDevice && (
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={3}>
+              <Box sx={{ flex: 1 }}>
                 <Typography variant="h6" gutterBottom>Device Information</Typography>
                 <List>
                   <ListItem>
@@ -925,8 +962,8 @@ export const DevicesPage: React.FC = () => {
                     } />
                   </ListItem>
                 </List>
-              </Grid>
-              <Grid item xs={12} md={6}>
+              </Box>
+              <Box sx={{ flex: 1 }}>
                 <Typography variant="h6" gutterBottom>Location</Typography>
                 <List>
                   <ListItem>
@@ -942,8 +979,8 @@ export const DevicesPage: React.FC = () => {
                     <ListItemText primary="ZIP Code" secondary={selectedDevice.location.zipCode} />
                   </ListItem>
                 </List>
-              </Grid>
-            </Grid>
+              </Box>
+            </Stack>
           )}
         </DialogContent>
         <DialogActions>

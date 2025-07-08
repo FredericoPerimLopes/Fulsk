@@ -8,9 +8,10 @@ import {
   Popover,
   Card,
   CardContent,
-  Grid,
-  LinearProgress
+  LinearProgress,
+  Stack
 } from '@mui/material';
+import Grid from '@mui/system/Grid';
 import {
   Wifi,
   WifiOff,
@@ -147,76 +148,76 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
                   Connection Details
                 </Typography>
                 
-                <Grid container spacing={2}>
-                  <Grid item xs={6}>
+                <Stack direction="row" spacing={2}>
+                  <Box sx={{ flex: 1 }}>
                     <Typography variant="body2" color="textSecondary">
                       Status
                     </Typography>
                     <Typography variant="body1">
                       {getStatusText()}
                     </Typography>
-                  </Grid>
+                  </Box>
                   
-                  <Grid item xs={6}>
+                  <Box sx={{ flex: 1 }}>
                     <Typography variant="body2" color="textSecondary">
                       Network
                     </Typography>
                     <Typography variant="body1">
                       {isOnline ? 'Online' : 'Offline'}
                     </Typography>
-                  </Grid>
+                  </Box>
                   
                   {isConnected && (
                     <>
-                      <Grid item xs={6}>
+                      <Box sx={{ flex: 1 }}>
                         <Typography variant="body2" color="textSecondary">
                           Latency
                         </Typography>
                         <Typography variant="body1">
                           {formatLatency(connectionStats.averageLatency)}
                         </Typography>
-                      </Grid>
+                      </Box>
                       
-                      <Grid item xs={6}>
+                      <Box sx={{ flex: 1 }}>
                         <Typography variant="body2" color="textSecondary">
                           Uptime
                         </Typography>
                         <Typography variant="body1">
                           {formatUptime()}
                         </Typography>
-                      </Grid>
+                      </Box>
                     </>
                   )}
                   
-                  <Grid item xs={6}>
+                  <Box sx={{ flex: 1 }}>
                     <Typography variant="body2" color="textSecondary">
                       Data Received
                     </Typography>
                     <Typography variant="body1">
                       {connectionStats.totalDataReceived.toLocaleString()}
                     </Typography>
-                  </Grid>
+                  </Box>
                   
-                  <Grid item xs={6}>
+                  <Box sx={{ flex: 1 }}>
                     <Typography variant="body2" color="textSecondary">
                       Reconnect Attempts
                     </Typography>
                     <Typography variant="body1">
                       {connectionStats.reconnectAttempts}
                     </Typography>
-                  </Grid>
+                  </Box>
                   
                   {lastSync && (
-                    <Grid item xs={12}>
+                    <Box sx={{ flex: 1 }}>
                       <Typography variant="body2" color="textSecondary">
                         Last Sync
                       </Typography>
                       <Typography variant="body1">
                         {lastSync.toLocaleString()}
                       </Typography>
-                    </Grid>
+                    </Box>
                   )}
-                </Grid>
+                </Stack>
                 
                 <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
                   <IconButton
@@ -263,8 +264,8 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
           </Box>
         )}
         
-        <Grid container spacing={2}>
-          <Grid item xs={6}>
+        <Stack direction="row" spacing={2}>
+          <Box sx={{ flex: 1 }}>
             <Typography variant="body2" color="textSecondary">
               Connection Status
             </Typography>
@@ -274,9 +275,9 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
               color={getStatusColor()}
               size="small"
             />
-          </Grid>
+          </Box>
           
-          <Grid item xs={6}>
+          <Box sx={{ flex: 1 }}>
             <Typography variant="body2" color="textSecondary">
               Network Status
             </Typography>
@@ -286,11 +287,11 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
               color={isOnline ? 'success' : 'error'}
               size="small"
             />
-          </Grid>
+          </Box>
           
           {isConnected && (
             <>
-              <Grid item xs={12}>
+              <Box sx={{ flex: 1 }}>
                 <Typography variant="body2" color="textSecondary">
                   Connection Quality
                 </Typography>
@@ -302,46 +303,46 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
                     </Typography>
                   </Box>
                 </Box>
-              </Grid>
+              </Box>
               
-              <Grid item xs={6}>
+              <Box sx={{ flex: 1 }}>
                 <Typography variant="body2" color="textSecondary">
                   Connected Since
                 </Typography>
                 <Typography variant="body2">
                   {connectionStats.lastConnected?.toLocaleTimeString() || 'N/A'}
                 </Typography>
-              </Grid>
+              </Box>
               
-              <Grid item xs={6}>
+              <Box sx={{ flex: 1 }}>
                 <Typography variant="body2" color="textSecondary">
                   Uptime
                 </Typography>
                 <Typography variant="body2">
                   {formatUptime()}
                 </Typography>
-              </Grid>
+              </Box>
             </>
           )}
           
-          <Grid item xs={6}>
+          <Box sx={{ flex: 1 }}>
             <Typography variant="body2" color="textSecondary">
               Data Points
             </Typography>
             <Typography variant="body2">
               {connectionStats.totalDataReceived.toLocaleString()}
             </Typography>
-          </Grid>
+          </Box>
           
-          <Grid item xs={6}>
+          <Box sx={{ flex: 1 }}>
             <Typography variant="body2" color="textSecondary">
               Failed Attempts
             </Typography>
             <Typography variant="body2">
               {connectionStats.reconnectAttempts}
             </Typography>
-          </Grid>
-        </Grid>
+          </Box>
+        </Stack>
       </CardContent>
     </Card>
   );

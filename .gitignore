@@ -110,3 +110,12 @@ memory/archive/
 
 node_modules/
 /src/generated/prisma
+.claude
+client/memory/backups/backup-2025-07-08T02-53-52-201Z.json
+client/memory/backups/backup-2025-07-08T02-53-26-565Z.json
+client/memory/backups/backup-2025-07-08T02-53-38-758Z.json
+client/memory/backups/backup-2025-07-08T02-54-06-154Z.json
+client/memory/backups/backup-2025-07-08T02-54-21-633Z.json
+client/memory/backups/backup-2025-07-08T02-54-45-772Z.json
+client/memory/backups/backup-2025-07-08T02-55-03-793Z.json
+client/memory/data/entries.json

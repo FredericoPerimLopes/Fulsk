@@ -4,7 +4,6 @@ import {
   Card,
   CardContent,
   Typography,
-  Grid,
   Tabs,
   Tab,
   FormControl,
@@ -18,7 +17,8 @@ import {
   Switch,
   FormControlLabel,
   Alert,
-  useTheme
+  useTheme,
+  Stack
 } from '@mui/material';
 import {
   TrendingUp,
@@ -361,8 +361,8 @@ export const AdvancedAnalytics: React.FC<AdvancedAnalyticsProps> = ({
 
       {/* Key Metrics Summary */}
       {performanceMetrics && (
-        <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={6} md={3}>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 3 }}>
+          <Box sx={{ flex: 1 }}>
             <Card>
               <CardContent sx={{ textAlign: 'center' }}>
                 <WbSunny color="warning" sx={{ fontSize: 32, mb: 1 }} />
@@ -380,9 +380,9 @@ export const AdvancedAnalytics: React.FC<AdvancedAnalyticsProps> = ({
                 />
               </CardContent>
             </Card>
-          </Grid>
+          </Box>
           
-          <Grid item xs={6} md={3}>
+          <Box sx={{ flex: 1 }}>
             <Card>
               <CardContent sx={{ textAlign: 'center' }}>
                 <Assessment color="success" sx={{ fontSize: 32, mb: 1 }} />
@@ -400,9 +400,9 @@ export const AdvancedAnalytics: React.FC<AdvancedAnalyticsProps> = ({
                 />
               </CardContent>
             </Card>
-          </Grid>
+          </Box>
           
-          <Grid item xs={6} md={3}>
+          <Box sx={{ flex: 1 }}>
             <Card>
               <CardContent sx={{ textAlign: 'center' }}>
                 <BatteryChargingFull color="info" sx={{ fontSize: 32, mb: 1 }} />
@@ -420,9 +420,9 @@ export const AdvancedAnalytics: React.FC<AdvancedAnalyticsProps> = ({
                 />
               </CardContent>
             </Card>
-          </Grid>
+          </Box>
           
-          <Grid item xs={6} md={3}>
+          <Box sx={{ flex: 1 }}>
             <Card>
               <CardContent sx={{ textAlign: 'center' }}>
                 <ElectricBolt color="warning" sx={{ fontSize: 32, mb: 1 }} />
@@ -440,8 +440,8 @@ export const AdvancedAnalytics: React.FC<AdvancedAnalyticsProps> = ({
                 />
               </CardContent>
             </Card>
-          </Grid>
-        </Grid>
+          </Box>
+        </Stack>
       )}
 
       {/* Tabs for different analytics views */}
@@ -456,8 +456,8 @@ export const AdvancedAnalytics: React.FC<AdvancedAnalyticsProps> = ({
 
       <TabPanel value={tabValue} index={0}>
         {/* Power Trends */}
-        <Grid container spacing={3}>
-          <Grid item xs={12} lg={8}>
+        <Stack direction={{ xs: 'column', lg: 'row' }} spacing={3}>
+          <Box sx={{ flex: { lg: 2 } }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
@@ -512,9 +512,9 @@ export const AdvancedAnalytics: React.FC<AdvancedAnalyticsProps> = ({
                 </Box>
               </CardContent>
             </Card>
-          </Grid>
+          </Box>
           
-          <Grid item xs={12} lg={4}>
+          <Box sx={{ flex: { lg: 1 } }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
@@ -530,7 +530,7 @@ export const AdvancedAnalytics: React.FC<AdvancedAnalyticsProps> = ({
                         innerRadius={60}
                         outerRadius={100}
                         dataKey="value"
-                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                        label={({ name, percent }) => `${name}: ${((percent || 0) * 100).toFixed(0)}%`}
                       >
                         {pieData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
@@ -542,14 +542,14 @@ export const AdvancedAnalytics: React.FC<AdvancedAnalyticsProps> = ({
                 </Box>
               </CardContent>
             </Card>
-          </Grid>
-        </Grid>
+          </Box>
+        </Stack>
       </TabPanel>
 
       <TabPanel value={tabValue} index={1}>
         {/* Production Analysis */}
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
+        <Box>
+          <Box>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
@@ -575,14 +575,14 @@ export const AdvancedAnalytics: React.FC<AdvancedAnalyticsProps> = ({
                 </Box>
               </CardContent>
             </Card>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
       </TabPanel>
 
       <TabPanel value={tabValue} index={2}>
         {/* Performance */}
-        <Grid container spacing={3}>
-          <Grid item xs={12} lg={6}>
+        <Stack direction={{ xs: 'column', lg: 'row' }} spacing={3}>
+          <Box sx={{ flex: 1 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
@@ -618,9 +618,9 @@ export const AdvancedAnalytics: React.FC<AdvancedAnalyticsProps> = ({
                 </Box>
               </CardContent>
             </Card>
-          </Grid>
+          </Box>
           
-          <Grid item xs={12} lg={6}>
+          <Box sx={{ flex: 1 }}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
@@ -655,8 +655,8 @@ export const AdvancedAnalytics: React.FC<AdvancedAnalyticsProps> = ({
                 </Box>
               </CardContent>
             </Card>
-          </Grid>
-        </Grid>
+          </Box>
+        </Stack>
       </TabPanel>
 
       <TabPanel value={tabValue} index={3}>

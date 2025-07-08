@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import {
-  Grid,
   Card,
   CardContent,
   Typography,
@@ -14,7 +13,8 @@ import {
   useTheme,
   Alert,
   AlertTitle,
-  Skeleton
+  Skeleton,
+  Stack
 } from '@mui/material';
 import {
   ElectricBolt,
@@ -501,8 +501,18 @@ export const InverterDashboard: React.FC<InverterDashboardProps> = ({
       </Paper>
 
       {/* Main Metrics */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={6} md={3}>
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        spacing={2}
+        sx={{ 
+          mb: 3,
+          flexWrap: 'wrap',
+          '& > *': {
+            flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)', md: '1 1 calc(25% - 12px)' }
+          }
+        }}
+      >
+        <Box>
           <MetricCard
             title="Total AC Power"
             value={formatPower(inverterMetrics.totalPower)}
@@ -511,9 +521,9 @@ export const InverterDashboard: React.FC<InverterDashboardProps> = ({
             trend={getTrendIcon()}
             loading={isLoading}
           />
-        </Grid>
+        </Box>
         
-        <Grid item xs={6} md={3}>
+        <Box>
           <MetricCard
             title="Energy Today"
             value={formatEnergy(inverterMetrics.totalEnergyDaily)}
@@ -521,9 +531,9 @@ export const InverterDashboard: React.FC<InverterDashboardProps> = ({
             color="success"
             loading={isLoading}
           />
-        </Grid>
+        </Box>
         
-        <Grid item xs={6} md={3}>
+        <Box>
           <MetricCard
             title="System Efficiency"
             value={inverterMetrics.averageEfficiency.toFixed(1)}
@@ -532,9 +542,9 @@ export const InverterDashboard: React.FC<InverterDashboardProps> = ({
             color={inverterMetrics.averageEfficiency >= 90 ? 'success' : inverterMetrics.averageEfficiency >= 80 ? 'warning' : 'error'}
             loading={isLoading}
           />
-        </Grid>
+        </Box>
         
-        <Grid item xs={6} md={3}>
+        <Box>
           <MetricCard
             title="Avg Temperature"
             value={inverterMetrics.averageTemperature.toFixed(1)}
@@ -543,13 +553,13 @@ export const InverterDashboard: React.FC<InverterDashboardProps> = ({
             color={inverterMetrics.averageTemperature <= 45 ? 'success' : inverterMetrics.averageTemperature <= 60 ? 'warning' : 'error'}
             loading={isLoading}
           />
-        </Grid>
-      </Grid>
+        </Box>
+      </Stack>
 
       {/* Charts and Details */}
-      <Grid container spacing={2}>
+      <Stack direction={{ xs: 'column', lg: 'row' }} spacing={2}>
         {/* Enhanced Power Trend Chart */}
-        <Grid item xs={12} lg={8}>
+        <Box sx={{ flex: { lg: 2 } }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
@@ -634,10 +644,10 @@ export const InverterDashboard: React.FC<InverterDashboardProps> = ({
               </Box>
             </CardContent>
           </Card>
-        </Grid>
+        </Box>
 
         {/* Efficiency and Temperature */}
-        <Grid item xs={12} lg={4}>
+        <Box sx={{ flex: { lg: 1 } }}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -693,10 +703,11 @@ export const InverterDashboard: React.FC<InverterDashboardProps> = ({
               </Box>
             </CardContent>
           </Card>
-        </Grid>
+        </Box>
+      </Stack>
 
-        {/* Enhanced Individual Inverter Status */}
-        <Grid item xs={12}>
+      {/* Enhanced Individual Inverter Status */}
+      <Box sx={{ mt: 2 }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
@@ -712,13 +723,26 @@ export const InverterDashboard: React.FC<InverterDashboardProps> = ({
                 </Box>
               </Box>
               
-              <Grid container spacing={2}>
+              <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                spacing={2}
+                sx={{
+                  flexWrap: 'wrap',
+                  '& > *': {
+                    flex: { 
+                      xs: '1 1 100%', 
+                      sm: '1 1 calc(50% - 8px)', 
+                      md: compact ? '1 1 calc(50% - 8px)' : '1 1 calc(25% - 12px)'
+                    }
+                  }
+                }}
+              >
                 {inverterDevices.slice(0, compact ? 4 : 8).map((device) => {
                   const inverterData = getInverterData(device);
                   const isSelected = selectedInverter?.id === device.id;
                   
                   return (
-                    <Grid item xs={12} sm={6} md={compact ? 6 : 3} key={device.id}>
+                    <Box key={device.id}>
                       <Paper 
                         sx={{ 
                           p: 2, 
@@ -817,10 +841,10 @@ export const InverterDashboard: React.FC<InverterDashboardProps> = ({
                           </Box>
                         )}
                       </Paper>
-                    </Grid>
+                    </Box>
                   );
                 })}
-              </Grid>
+              </Stack>
               
               {inverterDevices.length > (compact ? 4 : 8) && (
                 <Box sx={{ mt: 2, textAlign: 'center' }}>
@@ -831,8 +855,7 @@ export const InverterDashboard: React.FC<InverterDashboardProps> = ({
               )}
             </CardContent>
           </Card>
-        </Grid>
-      </Grid>
+      </Box>
     </Box>
   );
 };

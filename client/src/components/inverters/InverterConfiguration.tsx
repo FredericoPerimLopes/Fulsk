@@ -6,7 +6,6 @@ import {
   Typography,
   TextField,
   Button,
-  Grid,
   Switch,
   FormControlLabel,
   Chip,
@@ -33,11 +32,12 @@ import {
   Select,
   FormControl,
   InputLabel,
-  LinearProgress
+  LinearProgress,
+  Stack
 } from '@mui/material';
 import {
   Save,
-  TestMode,
+  Science,
   Add,
   Delete,
   Edit,
@@ -53,11 +53,11 @@ import {
   Upload
 } from '@mui/icons-material';
 import { useDeviceStore } from '../../stores/deviceStore';
-import { InverterConfiguration, Device } from '../../types/api';
+import { InverterConfiguration as InverterConfigurationType, Device } from '../../types/api';
 
 interface InverterConfigurationProps {
   deviceId?: string;
-  onConfigurationSaved?: (config: InverterConfiguration) => void;
+  onConfigurationSaved?: (config: InverterConfigurationType) => void;
 }
 
 interface TabPanelProps {
@@ -86,7 +86,7 @@ export const InverterConfiguration: React.FC<InverterConfigurationProps> = ({
   onConfigurationSaved
 }) => {
   const [currentTab, setCurrentTab] = useState(0);
-  const [configuration, setConfiguration] = useState<InverterConfiguration>({
+  const [configuration, setConfiguration] = useState<InverterConfigurationType>({
     ipAddress: '',
     port: 502,
     unitId: 1,
@@ -171,7 +171,7 @@ export const InverterConfiguration: React.FC<InverterConfigurationProps> = ({
     }
   };
 
-  const handleConfigurationChange = (field: keyof InverterConfiguration, value: any) => {
+  const handleConfigurationChange = (field: keyof InverterConfigurationType, value: any) => {
     setConfiguration(prev => ({
       ...prev,
       [field]: value
@@ -256,7 +256,7 @@ export const InverterConfiguration: React.FC<InverterConfigurationProps> = ({
     if (preset) {
       setConfiguration(prev => ({
         ...prev,
-        registerMap: preset
+        registerMap: preset as InverterConfigurationType['registerMap']
       }));
     }
   };
@@ -320,38 +320,37 @@ export const InverterConfiguration: React.FC<InverterConfigurationProps> = ({
 
         {/* Connection Tab */}
         <TabPanel value={currentTab} index={0}>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={3}>
+            <Box sx={{ flex: 1 }}>
               <Card variant="outlined">
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
                     Modbus TCP Connection
                   </Typography>
                   
-                  <Grid container spacing={2}>
-                    <Grid item xs={12}>
-                      <TextField
-                        fullWidth
-                        label="IP Address"
-                        value={configuration.ipAddress}
-                        onChange={(e) => handleConfigurationChange('ipAddress', e.target.value)}
-                        placeholder="192.168.1.100"
-                        helperText="IP address of the inverter"
-                      />
-                    </Grid>
+                  <Stack spacing={2}>
+                    <TextField
+                      fullWidth
+                      label="IP Address"
+                      value={configuration.ipAddress}
+                      onChange={(e) => handleConfigurationChange('ipAddress', e.target.value)}
+                      placeholder="192.168.1.100"
+                      helperText="IP address of the inverter"
+                    />
                     
-                    <Grid item xs={6}>
-                      <TextField
-                        fullWidth
-                        label="Port"
-                        type="number"
-                        value={configuration.port}
-                        onChange={(e) => handleConfigurationChange('port', parseInt(e.target.value))}
-                        helperText="Default: 502"
-                      />
-                    </Grid>
-                    
-                    <Grid item xs={6}>
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                      <Box sx={{ flex: 1 }}>
+                        <TextField
+                          fullWidth
+                          label="Port"
+                          type="number"
+                          value={configuration.port}
+                          onChange={(e) => handleConfigurationChange('port', parseInt(e.target.value))}
+                          helperText="Default: 502"
+                        />
+                      </Box>
+                      
+                      <Box sx={{ flex: 1 }}>
                       <TextField
                         fullWidth
                         label="Unit ID"
@@ -360,47 +359,48 @@ export const InverterConfiguration: React.FC<InverterConfigurationProps> = ({
                         onChange={(e) => handleConfigurationChange('unitId', parseInt(e.target.value))}
                         helperText="Modbus unit ID"
                       />
-                    </Grid>
+                      </Box>
+                    </Stack>
                     
-                    <Grid item xs={6}>
-                      <TextField
-                        fullWidth
-                        label="Poll Interval (seconds)"
-                        type="number"
-                        value={configuration.pollInterval}
-                        onChange={(e) => handleConfigurationChange('pollInterval', parseInt(e.target.value))}
-                        helperText="Data collection frequency"
-                      />
-                    </Grid>
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                      <Box sx={{ flex: 1 }}>
+                        <TextField
+                          fullWidth
+                          label="Poll Interval (seconds)"
+                          type="number"
+                          value={configuration.pollInterval}
+                          onChange={(e) => handleConfigurationChange('pollInterval', parseInt(e.target.value))}
+                          helperText="Data collection frequency"
+                        />
+                      </Box>
+                      
+                      <Box sx={{ flex: 1 }}>
+                        <TextField
+                          fullWidth
+                          label="Timeout (ms)"
+                          type="number"
+                          value={configuration.timeout}
+                          onChange={(e) => handleConfigurationChange('timeout', parseInt(e.target.value))}
+                          helperText="Connection timeout"
+                        />
+                      </Box>
+                    </Stack>
                     
-                    <Grid item xs={6}>
-                      <TextField
-                        fullWidth
-                        label="Timeout (ms)"
-                        type="number"
-                        value={configuration.timeout}
-                        onChange={(e) => handleConfigurationChange('timeout', parseInt(e.target.value))}
-                        helperText="Connection timeout"
-                      />
-                    </Grid>
-                    
-                    <Grid item xs={12}>
-                      <FormControlLabel
-                        control={
-                          <Switch
-                            checked={configuration.enabled}
-                            onChange={(e) => handleConfigurationChange('enabled', e.target.checked)}
-                          />
-                        }
-                        label="Enable automatic data collection"
-                      />
-                    </Grid>
-                  </Grid>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={configuration.enabled}
+                          onChange={(e) => handleConfigurationChange('enabled', e.target.checked)}
+                        />
+                      }
+                      label="Enable automatic data collection"
+                    />
+                  </Stack>
                 </CardContent>
               </Card>
-            </Grid>
+            </Box>
 
-            <Grid item xs={12} md={6}>
+            <Box sx={{ flex: 1 }}>
               <Card variant="outlined">
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
@@ -410,7 +410,7 @@ export const InverterConfiguration: React.FC<InverterConfigurationProps> = ({
                   <Box sx={{ mb: 2 }}>
                     <Button
                       variant="contained"
-                      startIcon={isTesting ? <CircularProgress size={20} /> : <TestMode />}
+                      startIcon={isTesting ? <CircularProgress size={20} /> : <Science />}
                       onClick={handleTestConnection}
                       disabled={isTesting || !configuration.ipAddress}
                       fullWidth
@@ -455,8 +455,8 @@ export const InverterConfiguration: React.FC<InverterConfigurationProps> = ({
                   </Typography>
                 </CardContent>
               </Card>
-            </Grid>
-          </Grid>
+            </Box>
+          </Stack>
         </TabPanel>
 
         {/* Register Mapping Tab */}
@@ -532,8 +532,8 @@ export const InverterConfiguration: React.FC<InverterConfigurationProps> = ({
 
         {/* Advanced Tab */}
         <TabPanel value={currentTab} index={2}>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={3}>
+            <Box sx={{ flex: 1 }}>
               <Card variant="outlined">
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
@@ -557,9 +557,9 @@ export const InverterConfiguration: React.FC<InverterConfigurationProps> = ({
                   </Alert>
                 </CardContent>
               </Card>
-            </Grid>
+            </Box>
 
-            <Grid item xs={12} md={6}>
+            <Box sx={{ flex: 1 }}>
               <Card variant="outlined">
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
@@ -620,8 +620,8 @@ export const InverterConfiguration: React.FC<InverterConfigurationProps> = ({
                   </Alert>
                 </CardContent>
               </Card>
-            </Grid>
-          </Grid>
+            </Box>
+          </Stack>
         </TabPanel>
 
         {/* Action Buttons */}
@@ -644,26 +644,25 @@ export const InverterConfiguration: React.FC<InverterConfigurationProps> = ({
       <Dialog open={showAddRegisterDialog} onClose={() => setShowAddRegisterDialog(false)}>
         <DialogTitle>Add New Register</DialogTitle>
         <DialogContent>
-          <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Register Name"
-                value={newRegister.name}
-                onChange={(e) => setNewRegister(prev => ({ ...prev, name: e.target.value }))}
-                placeholder="e.g., AC_Power"
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <TextField
-                fullWidth
-                label="Address"
-                type="number"
-                value={newRegister.address}
-                onChange={(e) => setNewRegister(prev => ({ ...prev, address: parseInt(e.target.value) || 0 }))}
-              />
-            </Grid>
-            <Grid item xs={6}>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            <TextField
+              fullWidth
+              label="Register Name"
+              value={newRegister.name}
+              onChange={(e) => setNewRegister(prev => ({ ...prev, name: e.target.value }))}
+              placeholder="e.g., AC_Power"
+            />
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+              <Box sx={{ flex: 1 }}>
+                <TextField
+                  fullWidth
+                  label="Address"
+                  type="number"
+                  value={newRegister.address}
+                  onChange={(e) => setNewRegister(prev => ({ ...prev, address: parseInt(e.target.value) || 0 }))}
+                />
+              </Box>
+              <Box sx={{ flex: 1 }}>
               <FormControl fullWidth>
                 <InputLabel>Type</InputLabel>
                 <Select
@@ -678,26 +677,29 @@ export const InverterConfiguration: React.FC<InverterConfigurationProps> = ({
                   <MenuItem value="string">string</MenuItem>
                 </Select>
               </FormControl>
-            </Grid>
-            <Grid item xs={6}>
-              <TextField
-                fullWidth
-                label="Scale Factor"
-                type="number"
-                value={newRegister.scaleFactor}
-                onChange={(e) => setNewRegister(prev => ({ ...prev, scaleFactor: parseInt(e.target.value) || 0 }))}
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <TextField
-                fullWidth
-                label="Units"
-                value={newRegister.units}
-                onChange={(e) => setNewRegister(prev => ({ ...prev, units: e.target.value }))}
-                placeholder="e.g., W, V, A"
-              />
-            </Grid>
-          </Grid>
+              </Box>
+            </Stack>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+              <Box sx={{ flex: 1 }}>
+                <TextField
+                  fullWidth
+                  label="Scale Factor"
+                  type="number"
+                  value={newRegister.scaleFactor}
+                  onChange={(e) => setNewRegister(prev => ({ ...prev, scaleFactor: parseInt(e.target.value) || 0 }))}
+                />
+              </Box>
+              <Box sx={{ flex: 1 }}>
+                <TextField
+                  fullWidth
+                  label="Units"
+                  value={newRegister.units}
+                  onChange={(e) => setNewRegister(prev => ({ ...prev, units: e.target.value }))}
+                  placeholder="e.g., W, V, A"
+                />
+              </Box>
+            </Stack>
+          </Stack>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setShowAddRegisterDialog(false)}>Cancel</Button>

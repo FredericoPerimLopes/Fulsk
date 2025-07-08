@@ -3,7 +3,6 @@ import {
   Box,
   Typography,
   Paper,
-  Grid,
   Card,
   CardContent,
   CardHeader,
@@ -31,7 +30,8 @@ import {
   Tab,
   Chip,
   Avatar,
-  Badge
+  Badge,
+  Stack
 } from '@mui/material';
 import {
   Person,
@@ -188,71 +188,74 @@ export const SettingsPage: React.FC = () => {
       </Box>
 
       <TabPanel value={tabValue} index={0}>
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={8}>
+        <Stack direction={{ xs: 'column', md: 'row' }} spacing={3}>
+          <Box sx={{ flex: { md: 2 } }}>
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom>
                 Personal Information
               </Typography>
-              <Grid container spacing={3}>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="First Name"
-                    value={profile.firstName}
-                    onChange={(e) => setProfile(prev => ({ ...prev, firstName: e.target.value }))}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
+              <Stack spacing={3}>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
+                  <Box sx={{ flex: 1 }}>
+                    <TextField
+                      fullWidth
+                      label="First Name"
+                      value={profile.firstName}
+                      onChange={(e) => setProfile(prev => ({ ...prev, firstName: e.target.value }))}
+                    />
+                  </Box>
+                  <Box sx={{ flex: 1 }}>
                   <TextField
                     fullWidth
                     label="Last Name"
                     value={profile.lastName}
                     onChange={(e) => setProfile(prev => ({ ...prev, lastName: e.target.value }))}
                   />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Email"
-                    type="email"
-                    value={profile.email}
-                    onChange={(e) => setProfile(prev => ({ ...prev, email: e.target.value }))}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Company"
-                    value={profile.company}
-                    onChange={(e) => setProfile(prev => ({ ...prev, company: e.target.value }))}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Phone"
-                    value={profile.phone}
-                    onChange={(e) => setProfile(prev => ({ ...prev, phone: e.target.value }))}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <FormControl fullWidth>
-                    <InputLabel>Timezone</InputLabel>
-                    <Select
-                      value={profile.timezone}
-                      label="Timezone"
-                      onChange={(e) => setProfile(prev => ({ ...prev, timezone: e.target.value }))}
-                    >
-                      <MenuItem value="America/New_York">Eastern Time</MenuItem>
-                      <MenuItem value="America/Chicago">Central Time</MenuItem>
-                      <MenuItem value="America/Denver">Mountain Time</MenuItem>
-                      <MenuItem value="America/Los_Angeles">Pacific Time</MenuItem>
-                      <MenuItem value="UTC">UTC</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12} sm={6}>
+                  </Box>
+                </Stack>
+                <TextField
+                  fullWidth
+                  label="Email"
+                  type="email"
+                  value={profile.email}
+                  onChange={(e) => setProfile(prev => ({ ...prev, email: e.target.value }))}
+                />
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
+                  <Box sx={{ flex: 1 }}>
+                    <TextField
+                      fullWidth
+                      label="Company"
+                      value={profile.company}
+                      onChange={(e) => setProfile(prev => ({ ...prev, company: e.target.value }))}
+                    />
+                  </Box>
+                  <Box sx={{ flex: 1 }}>
+                    <TextField
+                      fullWidth
+                      label="Phone"
+                      value={profile.phone}
+                      onChange={(e) => setProfile(prev => ({ ...prev, phone: e.target.value }))}
+                    />
+                  </Box>
+                </Stack>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
+                  <Box sx={{ flex: 1 }}>
+                    <FormControl fullWidth>
+                      <InputLabel>Timezone</InputLabel>
+                      <Select
+                        value={profile.timezone}
+                        label="Timezone"
+                        onChange={(e) => setProfile(prev => ({ ...prev, timezone: e.target.value }))}
+                      >
+                        <MenuItem value="America/New_York">Eastern Time</MenuItem>
+                        <MenuItem value="America/Chicago">Central Time</MenuItem>
+                        <MenuItem value="America/Denver">Mountain Time</MenuItem>
+                        <MenuItem value="America/Los_Angeles">Pacific Time</MenuItem>
+                        <MenuItem value="UTC">UTC</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Box>
+                  <Box sx={{ flex: 1 }}>
                   <FormControl fullWidth>
                     <InputLabel>Language</InputLabel>
                     <Select
@@ -266,16 +269,15 @@ export const SettingsPage: React.FC = () => {
                       <MenuItem value="de">German</MenuItem>
                     </Select>
                   </FormControl>
-                </Grid>
-                <Grid item xs={12}>
-                  <Button variant="contained" onClick={handleSaveProfile} startIcon={<Save />}>
-                    Save Changes
-                  </Button>
-                </Grid>
-              </Grid>
+                  </Box>
+                </Stack>
+                <Button variant="contained" onClick={handleSaveProfile} startIcon={<Save />}>
+                  Save Changes
+                </Button>
+              </Stack>
             </Paper>
-          </Grid>
-          <Grid item xs={12} md={4}>
+          </Box>
+          <Box sx={{ flex: { md: 1 } }}>
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom>
                 Profile Picture
@@ -289,13 +291,13 @@ export const SettingsPage: React.FC = () => {
                 </Button>
               </Box>
             </Paper>
-          </Grid>
-        </Grid>
+          </Box>
+        </Stack>
       </TabPanel>
 
       <TabPanel value={tabValue} index={1}>
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
+        <Stack direction={{ xs: 'column', md: 'row' }} spacing={3}>
+          <Box sx={{ flex: 1 }}>
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom>
                 Alert Notifications
@@ -351,8 +353,8 @@ export const SettingsPage: React.FC = () => {
                 </ListItem>
               </List>
             </Paper>
-          </Grid>
-          <Grid item xs={12} md={6}>
+          </Box>
+          <Box sx={{ flex: 1 }}>
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom>
                 Reports & Updates
@@ -431,65 +433,59 @@ export const SettingsPage: React.FC = () => {
                 </Box>
               )}
             </Paper>
-          </Grid>
-        </Grid>
+          </Box>
+        </Stack>
       </TabPanel>
 
       <TabPanel value={tabValue} index={2}>
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
+        <Stack direction={{ xs: 'column', md: 'row' }} spacing={3}>
+          <Box sx={{ flex: 1 }}>
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom>
                 Appearance
               </Typography>
-              <Grid container spacing={3}>
-                <Grid item xs={12}>
-                  <FormControl fullWidth>
-                    <InputLabel>Theme</InputLabel>
-                    <Select
-                      value={dashboard.theme}
-                      label="Theme"
-                      onChange={(e) => setDashboard(prev => ({ ...prev, theme: e.target.value }))}
-                    >
-                      <MenuItem value="light">Light</MenuItem>
-                      <MenuItem value="dark">Dark</MenuItem>
-                      <MenuItem value="auto">Auto (System)</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12}>
-                  <FormControl fullWidth>
-                    <InputLabel>Density</InputLabel>
-                    <Select
-                      value={dashboard.density}
-                      label="Density"
-                      onChange={(e) => setDashboard(prev => ({ ...prev, density: e.target.value }))}
-                    >
-                      <MenuItem value="compact">Compact</MenuItem>
-                      <MenuItem value="comfortable">Comfortable</MenuItem>
-                      <MenuItem value="spacious">Spacious</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12}>
-                  <FormControl fullWidth>
-                    <InputLabel>Default Page</InputLabel>
-                    <Select
-                      value={dashboard.defaultView}
-                      label="Default Page"
-                      onChange={(e) => setDashboard(prev => ({ ...prev, defaultView: e.target.value }))}
-                    >
-                      <MenuItem value="dashboard">Dashboard</MenuItem>
-                      <MenuItem value="analytics">Analytics</MenuItem>
-                      <MenuItem value="devices">Devices</MenuItem>
-                      <MenuItem value="alerts">Alerts</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-              </Grid>
+              <Stack spacing={3}>
+                <FormControl fullWidth>
+                  <InputLabel>Theme</InputLabel>
+                  <Select
+                    value={dashboard.theme}
+                    label="Theme"
+                    onChange={(e) => setDashboard(prev => ({ ...prev, theme: e.target.value }))}
+                  >
+                    <MenuItem value="light">Light</MenuItem>
+                    <MenuItem value="dark">Dark</MenuItem>
+                    <MenuItem value="auto">Auto (System)</MenuItem>
+                  </Select>
+                </FormControl>
+                <FormControl fullWidth>
+                  <InputLabel>Density</InputLabel>
+                  <Select
+                    value={dashboard.density}
+                    label="Density"
+                    onChange={(e) => setDashboard(prev => ({ ...prev, density: e.target.value }))}
+                  >
+                    <MenuItem value="compact">Compact</MenuItem>
+                    <MenuItem value="comfortable">Comfortable</MenuItem>
+                    <MenuItem value="spacious">Spacious</MenuItem>
+                  </Select>
+                </FormControl>
+                <FormControl fullWidth>
+                  <InputLabel>Default Page</InputLabel>
+                  <Select
+                    value={dashboard.defaultView}
+                    label="Default Page"
+                    onChange={(e) => setDashboard(prev => ({ ...prev, defaultView: e.target.value }))}
+                  >
+                    <MenuItem value="dashboard">Dashboard</MenuItem>
+                    <MenuItem value="analytics">Analytics</MenuItem>
+                    <MenuItem value="devices">Devices</MenuItem>
+                    <MenuItem value="alerts">Alerts</MenuItem>
+                  </Select>
+                </FormControl>
+              </Stack>
             </Paper>
-          </Grid>
-          <Grid item xs={12} md={6}>
+          </Box>
+          <Box sx={{ flex: 1 }}>
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom>
                 Behavior
@@ -541,8 +537,8 @@ export const SettingsPage: React.FC = () => {
                 </Select>
               </FormControl>
             </Paper>
-          </Grid>
-        </Grid>
+          </Box>
+        </Stack>
       </TabPanel>
 
       <TabPanel value={tabValue} index={3}>
@@ -550,125 +546,115 @@ export const SettingsPage: React.FC = () => {
           <Typography variant="h6" gutterBottom>
             Data Export Settings
           </Typography>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <FormControl fullWidth>
-                <InputLabel>Export Format</InputLabel>
-                <Select
-                  value={dataExport.format}
-                  label="Export Format"
-                  onChange={(e) => setDataExport(prev => ({ ...prev, format: e.target.value }))}
-                >
-                  <MenuItem value="csv">CSV</MenuItem>
-                  <MenuItem value="json">JSON</MenuItem>
-                  <MenuItem value="xlsx">Excel</MenuItem>
-                  <MenuItem value="pdf">PDF Report</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <FormControl fullWidth>
-                <InputLabel>Date Range</InputLabel>
-                <Select
-                  value={dataExport.dateRange}
-                  label="Date Range"
-                  onChange={(e) => setDataExport(prev => ({ ...prev, dateRange: e.target.value }))}
-                >
-                  <MenuItem value="7days">Last 7 days</MenuItem>
-                  <MenuItem value="30days">Last 30 days</MenuItem>
-                  <MenuItem value="90days">Last 90 days</MenuItem>
-                  <MenuItem value="1year">Last year</MenuItem>
-                  <MenuItem value="all">All data</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12}>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={dataExport.compression}
-                    onChange={(e) => setDataExport(prev => ({ ...prev, compression: e.target.checked }))}
-                  />
-                }
-                label="Enable compression for large exports"
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={dataExport.includeMetadata}
-                    onChange={(e) => setDataExport(prev => ({ ...prev, includeMetadata: e.target.checked }))}
-                  />
-                }
-                label="Include metadata and device information"
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <Button variant="contained" startIcon={<Download />}>
-                Export Data Now
-              </Button>
-            </Grid>
-          </Grid>
+          <Stack spacing={3}>
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={3}>
+              <Box sx={{ flex: 1 }}>
+                <FormControl fullWidth>
+                  <InputLabel>Export Format</InputLabel>
+                  <Select
+                    value={dataExport.format}
+                    label="Export Format"
+                    onChange={(e) => setDataExport(prev => ({ ...prev, format: e.target.value }))}
+                  >
+                    <MenuItem value="csv">CSV</MenuItem>
+                    <MenuItem value="json">JSON</MenuItem>
+                    <MenuItem value="xlsx">Excel</MenuItem>
+                    <MenuItem value="pdf">PDF Report</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
+              <Box sx={{ flex: 1 }}>
+                <FormControl fullWidth>
+                  <InputLabel>Date Range</InputLabel>
+                  <Select
+                    value={dataExport.dateRange}
+                    label="Date Range"
+                    onChange={(e) => setDataExport(prev => ({ ...prev, dateRange: e.target.value }))}
+                  >
+                    <MenuItem value="7days">Last 7 days</MenuItem>
+                    <MenuItem value="30days">Last 30 days</MenuItem>
+                    <MenuItem value="90days">Last 90 days</MenuItem>
+                    <MenuItem value="1year">Last year</MenuItem>
+                    <MenuItem value="all">All data</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
+            </Stack>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={dataExport.compression}
+                  onChange={(e) => setDataExport(prev => ({ ...prev, compression: e.target.checked }))}
+                />
+              }
+              label="Enable compression for large exports"
+            />
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={dataExport.includeMetadata}
+                  onChange={(e) => setDataExport(prev => ({ ...prev, includeMetadata: e.target.checked }))}
+                />
+              }
+              label="Include metadata and device information"
+            />
+            <Button variant="contained" startIcon={<Download />}>
+              Export Data Now
+            </Button>
+          </Stack>
         </Paper>
       </TabPanel>
 
       <TabPanel value={tabValue} index={4}>
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
+        <Stack direction={{ xs: 'column', md: 'row' }} spacing={3}>
+          <Box sx={{ flex: 1 }}>
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom>
                 Data Management
               </Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
+              <Stack spacing={2}>
+                <FormControl fullWidth>
+                  <InputLabel>Data Retention</InputLabel>
+                  <Select
+                    value={system.dataRetention}
+                    label="Data Retention"
+                    onChange={(e) => setSystem(prev => ({ ...prev, dataRetention: e.target.value }))}
+                  >
+                    <MenuItem value="6months">6 months</MenuItem>
+                    <MenuItem value="1year">1 year</MenuItem>
+                    <MenuItem value="2years">2 years</MenuItem>
+                    <MenuItem value="5years">5 years</MenuItem>
+                    <MenuItem value="forever">Forever</MenuItem>
+                  </Select>
+                </FormControl>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={system.backupEnabled}
+                      onChange={(e) => setSystem(prev => ({ ...prev, backupEnabled: e.target.checked }))}
+                    />
+                  }
+                  label="Enable automated backups"
+                />
+                {system.backupEnabled && (
                   <FormControl fullWidth>
-                    <InputLabel>Data Retention</InputLabel>
+                    <InputLabel>Backup Frequency</InputLabel>
                     <Select
-                      value={system.dataRetention}
-                      label="Data Retention"
-                      onChange={(e) => setSystem(prev => ({ ...prev, dataRetention: e.target.value }))}
+                      value={system.backupFrequency}
+                      label="Backup Frequency"
+                      onChange={(e) => setSystem(prev => ({ ...prev, backupFrequency: e.target.value }))}
                     >
-                      <MenuItem value="6months">6 months</MenuItem>
-                      <MenuItem value="1year">1 year</MenuItem>
-                      <MenuItem value="2years">2 years</MenuItem>
-                      <MenuItem value="5years">5 years</MenuItem>
-                      <MenuItem value="forever">Forever</MenuItem>
+                      <MenuItem value="hourly">Hourly</MenuItem>
+                      <MenuItem value="daily">Daily</MenuItem>
+                      <MenuItem value="weekly">Weekly</MenuItem>
+                      <MenuItem value="monthly">Monthly</MenuItem>
                     </Select>
                   </FormControl>
-                </Grid>
-                <Grid item xs={12}>
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={system.backupEnabled}
-                        onChange={(e) => setSystem(prev => ({ ...prev, backupEnabled: e.target.checked }))}
-                      />
-                    }
-                    label="Enable automated backups"
-                  />
-                </Grid>
-                {system.backupEnabled && (
-                  <Grid item xs={12}>
-                    <FormControl fullWidth>
-                      <InputLabel>Backup Frequency</InputLabel>
-                      <Select
-                        value={system.backupFrequency}
-                        label="Backup Frequency"
-                        onChange={(e) => setSystem(prev => ({ ...prev, backupFrequency: e.target.value }))}
-                      >
-                        <MenuItem value="hourly">Hourly</MenuItem>
-                        <MenuItem value="daily">Daily</MenuItem>
-                        <MenuItem value="weekly">Weekly</MenuItem>
-                        <MenuItem value="monthly">Monthly</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
                 )}
-              </Grid>
+              </Stack>
             </Paper>
-          </Grid>
-          <Grid item xs={12} md={6}>
+          </Box>
+          <Box sx={{ flex: 1 }}>
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom>
                 Performance
@@ -703,8 +689,8 @@ export const SettingsPage: React.FC = () => {
                 </ListItem>
               </List>
             </Paper>
-          </Grid>
-        </Grid>
+          </Box>
+        </Stack>
       </TabPanel>
 
       <TabPanel value={tabValue} index={5}>
@@ -757,8 +743,8 @@ export const SettingsPage: React.FC = () => {
       </TabPanel>
 
       <TabPanel value={tabValue} index={6}>
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
+        <Stack direction={{ xs: 'column', md: 'row' }} spacing={3}>
+          <Box sx={{ flex: 1 }}>
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom>
                 Password Security
@@ -766,44 +752,36 @@ export const SettingsPage: React.FC = () => {
               <Alert severity="info" sx={{ mb: 2 }}>
                 Change your password regularly to maintain account security.
               </Alert>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Current Password"
-                    type={showPassword ? 'text' : 'password'}
-                    InputProps={{
-                      endAdornment: (
-                        <IconButton onClick={() => setShowPassword(!showPassword)}>
-                          {showPassword ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      )
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="New Password"
-                    type="password"
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Confirm New Password"
-                    type="password"
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <Button variant="contained" startIcon={<Lock />}>
-                    Update Password
-                  </Button>
-                </Grid>
-              </Grid>
+              <Stack spacing={2}>
+                <TextField
+                  fullWidth
+                  label="Current Password"
+                  type={showPassword ? 'text' : 'password'}
+                  InputProps={{
+                    endAdornment: (
+                      <IconButton onClick={() => setShowPassword(!showPassword)}>
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    )
+                  }}
+                />
+                <TextField
+                  fullWidth
+                  label="New Password"
+                  type="password"
+                />
+                <TextField
+                  fullWidth
+                  label="Confirm New Password"
+                  type="password"
+                />
+                <Button variant="contained" startIcon={<Lock />}>
+                  Update Password
+                </Button>
+              </Stack>
             </Paper>
-          </Grid>
-          <Grid item xs={12} md={6}>
+          </Box>
+          <Box sx={{ flex: 1 }}>
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom>
                 Two-Factor Authentication
@@ -815,8 +793,8 @@ export const SettingsPage: React.FC = () => {
                 Enable 2FA
               </Button>
             </Paper>
-          </Grid>
-        </Grid>
+          </Box>
+        </Stack>
       </TabPanel>
 
       <TabPanel value={tabValue} index={7}>
@@ -828,41 +806,44 @@ export const SettingsPage: React.FC = () => {
             Integration management coming soon! This will include connections to cloud services,
             IoT platforms, and external monitoring systems.
           </Alert>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6} md={4}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6">AWS IoT</Typography>
-                  <Typography variant="body2" color="textSecondary">
-                    Connect to AWS IoT Core
-                  </Typography>
-                  <Chip label="Not Connected" color="default" size="small" sx={{ mt: 1 }} />
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} sm={6} md={4}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6">Google Cloud</Typography>
-                  <Typography variant="body2" color="textSecondary">
-                    Sync with Google Cloud IoT
-                  </Typography>
-                  <Chip label="Not Connected" color="default" size="small" sx={{ mt: 1 }} />
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} sm={6} md={4}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6">Microsoft Azure</Typography>
-                  <Typography variant="body2" color="textSecondary">
-                    Connect to Azure IoT Hub
-                  </Typography>
-                  <Chip label="Not Connected" color="default" size="small" sx={{ mt: 1 }} />
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={2}
+            sx={{
+              flexWrap: 'wrap',
+              '& > *': {
+                flex: { xs: '1 1 100%', sm: '1 1 calc(50% - 8px)', md: '1 1 calc(33.333% - 10.67px)' }
+              }
+            }}
+          >
+            <Card>
+              <CardContent>
+                <Typography variant="h6">AWS IoT</Typography>
+                <Typography variant="body2" color="textSecondary">
+                  Connect to AWS IoT Core
+                </Typography>
+                <Chip label="Not Connected" color="default" size="small" sx={{ mt: 1 }} />
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent>
+                <Typography variant="h6">Google Cloud</Typography>
+                <Typography variant="body2" color="textSecondary">
+                  Sync with Google Cloud IoT
+                </Typography>
+                <Chip label="Not Connected" color="default" size="small" sx={{ mt: 1 }} />
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent>
+                <Typography variant="h6">Microsoft Azure</Typography>
+                <Typography variant="body2" color="textSecondary">
+                  Connect to Azure IoT Hub
+                </Typography>
+                <Chip label="Not Connected" color="default" size="small" sx={{ mt: 1 }} />
+              </CardContent>
+            </Card>
+          </Stack>
         </Paper>
       </TabPanel>
 

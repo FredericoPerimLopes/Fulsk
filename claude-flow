@@ -1,27 +1,34 @@
-#!/usr/bin/env bash
-# Claude-Flow local wrapper
-# This script ensures claude-flow runs from your project directory
+#!/usr/bin/env node
 
-# Save the current directory
-PROJECT_DIR="${PWD}"
+/**
+ * Claude Flow CLI - AI-Driven Development Toolkit
+ * 
+ * This is the main entry point for the Claude Flow command-line interface.
+ * It provides powerful AI coordination capabilities for Claude Code.
+ */
 
-# Set environment to ensure correct working directory
-export PWD="${PROJECT_DIR}"
-export CLAUDE_WORKING_DIR="${PROJECT_DIR}"
+const { spawn } = require('child_process');
+const path = require('path');
 
-# Try to find claude-flow
-# 1. Local node_modules
-if [ -f "${PROJECT_DIR}/node_modules/.bin/claude-flow" ]; then
-  cd "${PROJECT_DIR}"
-  exec "${PROJECT_DIR}/node_modules/.bin/claude-flow" "$@"
+// Resolve the actual CLI path
+const cliPath = path.resolve(__dirname, 'dist', 'index.js');
 
-# 2. Global installation
-elif command -v claude-flow &> /dev/null; then
-  cd "${PROJECT_DIR}"
-  exec claude-flow "$@"
+// Forward all arguments to the actual CLI
+const child = spawn(process.execPath, [cliPath, ...process.argv.slice(2)], {
+  stdio: 'inherit',
+  env: {
+    ...process.env,
+    CLAUDE_FLOW_CLI: 'true'
+  }
+});
 
-# 3. Fallback to npx
-else
-  cd "${PROJECT_DIR}"
-  exec npx claude-flow@latest "$@"
-fi
+// Forward the exit code
+child.on('exit', (code) => {
+  process.exit(code);
+});
+
+// Handle errors
+child.on('error', (err) => {
+  console.error('Failed to start Claude Flow:', err);
+  process.exit(1);
+});

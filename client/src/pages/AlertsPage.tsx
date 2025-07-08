@@ -3,7 +3,6 @@ import {
   Box,
   Typography,
   Paper,
-  Grid,
   Card,
   CardContent,
   Chip,
@@ -31,7 +30,8 @@ import {
   Alert as MuiAlert,
   AlertTitle,
   TextField,
-  InputAdornment
+  InputAdornment,
+  Stack
 } from '@mui/material';
 import {
   Warning,
@@ -239,8 +239,8 @@ export const AlertsPage: React.FC = () => {
       </Box>
 
       {/* Alert Statistics */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
+      <Stack direction="row" spacing={3} sx={{ mb: 4 }}>
+        <Box sx={{ flex: 1 }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -256,8 +256,8 @@ export const AlertsPage: React.FC = () => {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        </Box>
+        <Box sx={{ flex: 1 }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -273,8 +273,8 @@ export const AlertsPage: React.FC = () => {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        </Box>
+        <Box sx={{ flex: 1 }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -290,8 +290,8 @@ export const AlertsPage: React.FC = () => {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        </Box>
+        <Box sx={{ flex: 1 }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -307,8 +307,8 @@ export const AlertsPage: React.FC = () => {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
-      </Grid>
+        </Box>
+      </Stack>
 
       {/* Current Critical Alerts */}
       {criticalCount > 0 && (

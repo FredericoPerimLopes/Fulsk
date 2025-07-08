@@ -4,7 +4,6 @@ import {
   Card,
   CardContent,
   Typography,
-  Grid,
   Button,
   Table,
   TableBody,
@@ -37,7 +36,8 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  useTheme
+  useTheme,
+  Stack
 } from '@mui/material';
 import {
   Refresh,
@@ -326,9 +326,9 @@ export const InverterDiagnostics: React.FC<InverterDiagnosticsProps> = ({
         </Box>
       )}
 
-      <Grid container spacing={3}>
+      <Stack direction={{ xs: 'column', lg: 'row' }} spacing={3}>
         {/* Connection Status */}
-        <Grid item xs={12} md={6}>
+        <Box sx={{ flex: 1 }}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -348,43 +348,43 @@ export const InverterDiagnostics: React.FC<InverterDiagnosticsProps> = ({
                     </Typography>
                   </Box>
                   
-                  <Grid container spacing={2}>
-                    <Grid item xs={6}>
+                  <Stack direction="row" spacing={2}>
+                    <Box sx={{ flex: 1 }}>
                       <Typography variant="body2" color="textSecondary">
                         Response Time
                       </Typography>
                       <Typography variant="h6">
                         {diagnosticData.connectionTest.responseTime}ms
                       </Typography>
-                    </Grid>
+                    </Box>
                     
-                    <Grid item xs={6}>
+                    <Box sx={{ flex: 1 }}>
                       <Typography variant="body2" color="textSecondary">
                         Success Rate
                       </Typography>
                       <Typography variant="h6" color={getHealthColor(100 - diagnosticData.communicationStats.errorRate)}>
                         {(100 - diagnosticData.communicationStats.errorRate).toFixed(1)}%
                       </Typography>
-                    </Grid>
+                    </Box>
                     
-                    <Grid item xs={6}>
+                    <Box sx={{ flex: 1 }}>
                       <Typography variant="body2" color="textSecondary">
                         Total Requests
                       </Typography>
                       <Typography variant="h6">
                         {diagnosticData.communicationStats.totalRequests.toLocaleString()}
                       </Typography>
-                    </Grid>
+                    </Box>
                     
-                    <Grid item xs={6}>
+                    <Box sx={{ flex: 1 }}>
                       <Typography variant="body2" color="textSecondary">
                         Failed Requests
                       </Typography>
                       <Typography variant="h6" color="error">
                         {diagnosticData.communicationStats.failedRequests}
                       </Typography>
-                    </Grid>
-                  </Grid>
+                    </Box>
+                  </Stack>
                   
                   <Box sx={{ mt: 2 }}>
                     <Typography variant="body2" color="textSecondary" gutterBottom>
@@ -405,10 +405,10 @@ export const InverterDiagnostics: React.FC<InverterDiagnosticsProps> = ({
               )}
             </CardContent>
           </Card>
-        </Grid>
+        </Box>
 
         {/* Device Information */}
-        <Grid item xs={12} md={6}>
+        <Box sx={{ flex: 1 }}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -417,52 +417,52 @@ export const InverterDiagnostics: React.FC<InverterDiagnosticsProps> = ({
               
               {diagnosticData?.deviceInfo ? (
                 <Box>
-                  <Grid container spacing={2}>
-                    <Grid item xs={6}>
+                  <Stack direction="row" spacing={2}>
+                    <Box sx={{ flex: 1 }}>
                       <Typography variant="body2" color="textSecondary">
                         Manufacturer
                       </Typography>
                       <Typography variant="body1">
                         {diagnosticData.deviceInfo.manufacturer}
                       </Typography>
-                    </Grid>
+                    </Box>
                     
-                    <Grid item xs={6}>
+                    <Box sx={{ flex: 1 }}>
                       <Typography variant="body2" color="textSecondary">
                         Model
                       </Typography>
                       <Typography variant="body1">
                         {diagnosticData.deviceInfo.model}
                       </Typography>
-                    </Grid>
+                    </Box>
                     
-                    <Grid item xs={12}>
+                    <Box sx={{ flex: 1 }}>
                       <Typography variant="body2" color="textSecondary">
                         Serial Number
                       </Typography>
                       <Typography variant="body1">
                         {diagnosticData.deviceInfo.serialNumber}
                       </Typography>
-                    </Grid>
+                    </Box>
                     
-                    <Grid item xs={6}>
+                    <Box sx={{ flex: 1 }}>
                       <Typography variant="body2" color="textSecondary">
                         Firmware Version
                       </Typography>
                       <Typography variant="body1">
                         {diagnosticData.deviceInfo.firmwareVersion}
                       </Typography>
-                    </Grid>
+                    </Box>
                     
-                    <Grid item xs={6}>
+                    <Box sx={{ flex: 1 }}>
                       <Typography variant="body2" color="textSecondary">
                         SunSpec Version
                       </Typography>
                       <Typography variant="body1">
                         {diagnosticData.deviceInfo.sunspecVersion}
                       </Typography>
-                    </Grid>
-                  </Grid>
+                    </Box>
+                  </Stack>
                   
                   <Box sx={{ mt: 2 }}>
                     <Typography variant="body2" color="textSecondary" gutterBottom>
@@ -482,10 +482,10 @@ export const InverterDiagnostics: React.FC<InverterDiagnosticsProps> = ({
               )}
             </CardContent>
           </Card>
-        </Grid>
+        </Box>
 
         {/* Communication Chart */}
-        <Grid item xs={12} lg={8}>
+        <Box sx={{ flex: 1 }}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -540,10 +540,10 @@ export const InverterDiagnostics: React.FC<InverterDiagnosticsProps> = ({
               </Box>
             </CardContent>
           </Card>
-        </Grid>
+        </Box>
 
         {/* Register Testing */}
-        <Grid item xs={12} lg={4}>
+        <Box sx={{ flex: 1 }}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -599,10 +599,10 @@ export const InverterDiagnostics: React.FC<InverterDiagnosticsProps> = ({
               </Box>
             </CardContent>
           </Card>
-        </Grid>
+        </Box>
 
         {/* Register Status Table */}
-        <Grid item xs={12}>
+        <Box sx={{ flex: 1 }}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -663,10 +663,10 @@ export const InverterDiagnostics: React.FC<InverterDiagnosticsProps> = ({
               )}
             </CardContent>
           </Card>
-        </Grid>
+        </Box>
 
         {/* Communication Logs */}
-        <Grid item xs={12}>
+        <Box sx={{ flex: 1 }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -724,8 +724,8 @@ export const InverterDiagnostics: React.FC<InverterDiagnosticsProps> = ({
               </Box>
             </CardContent>
           </Card>
-        </Grid>
-      </Grid>
+        </Box>
+      </Stack>
     </Box>
   );
 };

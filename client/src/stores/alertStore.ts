@@ -11,6 +11,7 @@ interface AlertState {
   markAsRead: (alertId: string) => void;
   markAllAsRead: () => void;
   removeAlert: (alertId: string) => void;
+  deleteAlert: (alertId: string) => void;
   clearAlerts: () => void;
   acknowledgeAlert: (alertId: string) => void;
   acknowledgeAllAlerts: () => void;
@@ -69,6 +70,13 @@ export const useAlertStore = create<AlertState>((set, get) => ({
   }),
   
   removeAlert: (alertId: string) => set((state) => {
+    const alerts = state.alerts.filter(alert => alert.id !== alertId);
+    const notifications = state.notifications.filter(alert => alert.id !== alertId);
+    const unreadCount = alerts.filter(a => !a.acknowledged).length;
+    return { alerts, notifications, unreadCount };
+  }),
+  
+  deleteAlert: (alertId: string) => set((state) => {
     const alerts = state.alerts.filter(alert => alert.id !== alertId);
     const notifications = state.notifications.filter(alert => alert.id !== alertId);
     const unreadCount = alerts.filter(a => !a.acknowledged).length;
